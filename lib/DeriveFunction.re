@@ -4,7 +4,10 @@ open Ppxlib;
 /*
   * This deriver only works with records.
   * It generates a function for each label_decleration(field) by its name.
-  * 
+  * Converts that functions (structure_items) to the module_expression and returns a module called GM.
+  * That module includes all the generated functions in it.
+
+  * You can see the usage in the test_bs/src/Index.re file
 */
 
 let getFieldName = (field: label_declaration) => field.pld_name |> Loc.txt;
@@ -25,9 +28,7 @@ let recordHandler = (loc: Location.t, _recFlag: rec_flag, _t: type_declaration, 
   let (module Builder) = Ast_builder.make(loc);
 
   let generatedFunctions = fields |> List.map(~f= (field) => generateFieldFunction(loc, field));
-
-  let moduleStructureItems = [...generatedFunctions];
-  let moduleExpr = Builder.pmod_structure(moduleStructureItems);
+  let moduleExpr = Builder.pmod_structure(generatedFunctions);
 
   [%str
     module GM = [%m moduleExpr]

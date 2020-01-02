@@ -1,6 +1,13 @@
 open Ppxlib;
 module Builder = Ast_builder.Default;
 
+/*
+  * This extension adds 5 to the given number.
+  * Pretty simple huh?
+
+  * You can see the usage in the test_bs/src/Index.re file
+*/
+
 let expand = (~loc, ~path as _, num: int) => {
   let (module Builder) = Ast_builder.make(loc);
 
