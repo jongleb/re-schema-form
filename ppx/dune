@@ -1,0 +1,5 @@
+(executable
+  (name ppx)
+  (public_name ppx_examples)
+  (libraries ppx_examples.lib)
+)
