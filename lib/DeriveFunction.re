@@ -40,7 +40,7 @@ let str_gen = (~loc, ~path as _, (_rec: rec_flag, t: list(type_declaration))) =>
 
   switch t.ptype_kind {
   | Ptype_record(fields) => recordHandler(loc, _rec, t, fields);
-  | _ => Location.raise_errorf(~loc, "QueryBuilder only works on records.");
+  | _ => Location.raise_errorf(~loc, "deriveFunction only works on records.");
   };
 };
 let name = "deriveFunction";
