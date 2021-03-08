@@ -1,0 +1,7 @@
+(library
+  (name schema_render)
+  (public_name schema_render)
+  (kind ppx_rewriter)
+  (libraries schema_render.base ppxlib)
+  (preprocess (pps ppxlib.metaquot))
+)

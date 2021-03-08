@@ -1,0 +1,5 @@
+(executable
+  (name bin)
+  (public_name schema_render)
+  (libraries schema_render)
+)

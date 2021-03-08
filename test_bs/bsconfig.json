@@ -3,16 +3,22 @@
   "reason": {
     "react-jsx": 2
   },
-  "sources": {
-    "dir" : "src",
-    "subdirs" : true
-  },
+  "sources": [
+    {
+      "dir" : "src",
+      "subdirs" : true
+    },
+    {
+      "dir" : "../src/base",
+      "subdirs" : true
+    }
+  ],
   "package-specs": [{
     "module": "commonjs",
     "in-source": true
   }],
   "ppx-flags": [
-    "../_esy/default/build/default/ppx/ppx.exe"
+    "../_esy/default/build/default/src/bin/bin.exe"
   ],
   "suffix": ".bs.js",
   "namespace": true,

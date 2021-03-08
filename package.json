@@ -1,13 +1,21 @@
 {
-  "name": "ppx_examples",
+  "name": "schema_render",
   "esy": {
     "build": "dune build -p #{self.name}"
   },
   "dependencies": {
-    "@esy-ocaml/reason": ">= 3.4.0 < 3.6.0",
-    "@opam/dune": "*",
-    "@opam/ppxlib": "0.10.0",
-    "ocaml": "~4.6.1000"
+    "@opam/dune": ">=2.6",
+    "@reason-native/console": "*",
+    "@reason-native/pastel": "*",
+    "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
+    "ocaml": "~4.10.0",
+    "@opam/ppxlib": "0.22.0",
+    "@opam/ocaml-lsp-server": "1.4.0"
   },
-  "devDependencies": { "@opam/merlin": "*", "ocaml": "~4.6.1000" }
+  "devDependencies": { 
+    "@opam/merlin": "*",
+    "@reason-native/rely": "*",
+    "refmterr": "*",
+    "@opam/odoc": "*"
+   }
 }
