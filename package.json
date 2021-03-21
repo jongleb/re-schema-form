@@ -8,9 +8,11 @@
     "@reason-native/console": "*",
     "@reason-native/pastel": "*",
     "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
-    "ocaml": "~4.10.0",
-    "@opam/ppxlib": "0.22.0",
-    "@opam/ocaml-lsp-server": "1.4.0"
+    "ocaml": "4.10.0",
+    "@opam/ppxlib": "*",
+    "@opam/ocaml-lsp-server": "1.4.0",
+    "@opam/ocaml-migrate-parsetree": "1.7.3",
+    "@opam/ppx_tools_versioned": "5.4.0"
   },
   "devDependencies": { 
     "@opam/merlin": "*",

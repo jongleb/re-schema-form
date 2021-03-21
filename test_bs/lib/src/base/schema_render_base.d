@@ -1,1 +1,1 @@
-../src/base/schema_render_base-Testbs.cmj : Testbs.cmi ../src/base/schema-Testbs.cmj ../src/base/schema-Testbs.cmi
+../src/base/schema_render_base-ReasonReactRealworldExampleApp.cmj : ReasonReactRealworldExampleApp.cmi ../src/base/schema-ReasonReactRealworldExampleApp.cmj ../src/base/schema-ReasonReactRealworldExampleApp.cmi

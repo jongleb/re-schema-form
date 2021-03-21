@@ -1,7 +1,7 @@
 {
-  "name": "test_bs",
+  "name": "reason-react-realworld-example-app",
   "reason": {
-    "react-jsx": 2
+    "react-jsx": 3
   },
   "sources": [
     {
@@ -13,15 +13,30 @@
       "subdirs" : true
     }
   ],
-  "package-specs": [{
-    "module": "commonjs",
-    "in-source": true
-  }],
-  "ppx-flags": [
-    "../_esy/default/build/default/src/bin/bin.exe"
+  "bsc-flags": ["-bs-super-errors", "-bs-no-version-header"],
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": true
+    }
   ],
   "suffix": ".bs.js",
   "namespace": true,
-  "bs-dependencies": [],
-  "refmt": 3
+  "bs-dependencies": [
+    "bs-bastet",
+    "bs-decode",
+    "bs-fetch",
+    "@rescript/react",
+    "bs-webapi",
+    "relude"
+  ],
+  "bs-dev-dependencies": [
+  ],
+  "refmt": 3,
+  "warnings": {
+    "number": "-48"
+  },
+  "ppx-flags": [
+    "../_esy/default/build/default/src/bin/bin.exe"
+  ]
 }

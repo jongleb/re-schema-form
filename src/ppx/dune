@@ -2,6 +2,6 @@
   (name schema_render)
   (public_name schema_render)
   (kind ppx_rewriter)
-  (libraries schema_render.base ppxlib)
-  (preprocess (pps ppxlib.metaquot))
+  (libraries schema_render.base ppxlib ocaml-migrate-parsetree)
+  (preprocess (pps ppx_tools_versioned.metaquot_410))
 )

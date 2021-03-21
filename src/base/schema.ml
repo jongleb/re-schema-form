@@ -1,0 +1,1 @@
+type t = String | Number | Object of t array | Array | Boolean
