@@ -1,23 +1,22 @@
 {
   "name": "schema_render",
-  "esy": {
-    "build": "dune build -p #{self.name}"
-  },
+  "esy": { "build": "dune build -p #{self.name}" },
   "dependencies": {
-    "@opam/dune": ">=2.6",
-    "@reason-native/console": "*",
-    "@reason-native/pastel": "*",
     "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
-    "ocaml": "4.10.0",
-    "@opam/ppxlib": "*",
+    "@opam/dune": ">=2.6",
     "@opam/ocaml-lsp-server": "1.4.0",
     "@opam/ocaml-migrate-parsetree": "1.7.3",
-    "@opam/ppx_tools_versioned": "5.4.0"
+    "@opam/ppx_tools_versioned": "5.4.0",
+    "@opam/ppxlib": "*",
+    "@reason-native/console": "*",
+    "@reason-native/pastel": "*",
+    "lenses-ppx": "^6.1.10",
+    "ocaml": "4.10.0"
   },
-  "devDependencies": { 
+  "devDependencies": {
     "@opam/merlin": "*",
     "@reason-native/rely": "*",
     "refmterr": "*",
     "@opam/odoc": "*"
-   }
+  }
 }
