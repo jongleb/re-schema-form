@@ -1,5 +1,4 @@
-(* 
-type user = { name: string; age: int; }
+(* type user = { name: string; age: int; }
 type income = { proof_income: int; additional_income: int; }
 type state = { user: user; income: income; } *)
 
@@ -21,9 +20,10 @@ module rec Schema_object : sig
   end
 
 end = Schema_object
-(*  
+(* 
+open Schema_object
+
 module User = struct
-  open Schema_object
   type t = user
 
   type 'a field =
@@ -45,7 +45,6 @@ module User = struct
 end 
 
  module Income = struct
-  open Schema_object
   type t = income
 
   type _ field =
@@ -62,7 +61,6 @@ end
 end 
 
 module State  = struct 
-  open Schema_object
 
   type t = state
 

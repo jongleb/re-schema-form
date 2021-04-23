@@ -1,1 +1,0 @@
-module Schema = Schema;
