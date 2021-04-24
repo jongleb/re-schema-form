@@ -1,13 +1,13 @@
 open Schema
 
 module StateSchema = %schema(
-//  type another_one = {
-//    abcd: string,
-//  }
+ type another_one = {
+   abcd: string,
+ }
  type state = {
-  //  email: string,
+   email: string,
    age: int,
-  //  test2: string,
+   test2: string,
  };
 );
 

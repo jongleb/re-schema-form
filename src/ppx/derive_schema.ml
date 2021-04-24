@@ -136,7 +136,28 @@ let createGadt fields = {
 
 let create_mk_field = [%stri type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap]
 
-let parse_schema_item_type i =
+let try_parse_as_module i all_items =
+  let opt = List.find_opt (fun ii -> ii.pld_name.txt == i.pld_name.txt) all_items in
+  match opt with
+    | None -> Location.raise_errorf "This type %s is not supported" i.pld_name.txt
+    | _ -> 
+      let pmod_desc = Pmod_ident({
+        txt = Lident(String.capitalize_ascii i.pld_name.txt);
+        loc = Stdlib.(!) Ast_helper.default_loc;
+      }) in 
+      let pexp_desc = Pexp_pack({
+        pmod_desc;
+        pmod_loc = Stdlib.(!) Ast_helper.default_loc;
+        pmod_attributes = [];
+      }) in 
+      { 
+        pexp_desc;
+        pexp_loc = Stdlib.(!) Ast_helper.default_loc; 
+        pexp_attributes = [];
+        pexp_loc_stack = [];
+      }
+
+let parse_schema_item_type i all_items =
   let field_desc = Pexp_construct(
     {
       txt = Lident(String.capitalize_ascii i.pld_name.txt);
@@ -155,7 +176,7 @@ let parse_schema_item_type i =
   (* | [%type: float] => Some([%expr Schema.Number]) *)
   | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
   | [%type: bool] -> [%expr Mk_field(Schema_booleang([%e field]))]
-  | _ -> Location.raise_errorf "This type %s is not supported" i.pld_name.txt
+  | _ -> try_parse_as_module i all_items
 
 
 let create_exp pexp_desc = { 
@@ -167,7 +188,7 @@ let create_exp pexp_desc = {
 let rec parse_schema_items items = match items with
   | [] -> [%expr None]
   | h :: t -> 
-    let parsed_expr = parse_schema_item_type h in
+    let parsed_expr = parse_schema_item_type h items in
     let pexp_tuple = Pexp_tuple([parsed_expr; (parse_schema_items t)]) in
     create_exp pexp_tuple
     
