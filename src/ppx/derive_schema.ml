@@ -5,9 +5,8 @@ open Asttypes
 open Parsetree
 open Ast_helper
 open Schema_render_base
-let gadtFieldName = "field"
 
-let tsst = Ptyp_constr({ loc = Location.none; txt = Lident("")}, [])
+let gadtFieldName = "field"
 
 let createType name = {
   pstr_loc = Location.none;
@@ -135,6 +134,45 @@ let createGadt fields = {
     )
 }
 
+let create_mk_field = [%stri type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap]
+
+let parse_schema_item_type i =
+  let field_desc = Pexp_construct(
+    {
+      txt = Lident(String.capitalize_ascii i.pld_name.txt);
+      loc = Stdlib.(!) Ast_helper.default_loc;
+    },
+    None
+  ) in
+  let field = {
+    pexp_desc = field_desc;
+    pexp_loc = Stdlib.(!) Ast_helper.default_loc;
+    pexp_attributes = [];
+    pexp_loc_stack = [];
+  }  in
+  match i.pld_type with
+  | [%type: int] -> [%expr Mk_field(Schema_number([%e field]))]
+  (* | [%type: float] => Some([%expr Schema.Number]) *)
+  | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
+  | [%type: bool] -> [%expr Mk_field(Schema_booleang([%e field]))]
+  | _ -> Location.raise_errorf "This type %s is not supported" i.pld_name.txt
+
+
+let create_exp pexp_desc = { 
+  pexp_desc; 
+  pexp_loc = Stdlib.(!) Ast_helper.default_loc;
+  pexp_attributes = [];
+  pexp_loc_stack = [];
+}
+let rec parse_schema_items items = match items with
+  | [] -> [%expr None]
+  | h :: t -> 
+    let parsed_expr = parse_schema_item_type h in
+    let pexp_tuple = Pexp_tuple([parsed_expr; (parse_schema_items t)]) in
+    create_exp pexp_tuple
+    
+let create_schema_list list = [%stri let schema = [%e (parse_schema_items list)]]
+
 let createObjectModule name items = {
   pstr_loc = Location.none;
   pstr_desc = Pstr_module({
@@ -150,7 +188,9 @@ let createObjectModule name items = {
       pmod_desc = Pmod_structure([
         createType name;
         createGadt items;
-        createGetLens name items
+        create_mk_field;
+        create_schema_list items;
+        createGetLens name items;
       ])
     };
   })
@@ -164,7 +204,12 @@ let create_structure_schema root items =  List.map packModule items
 
 let createModule old_struture_items structure_items =
   let root = structure_items |> List.rev |> List.hd in 
-  Mod.mk (Pmod_structure (List.append old_struture_items (create_structure_schema root structure_items)))
+  Mod.mk (
+    Pmod_structure (
+      List.append old_struture_items (create_structure_schema root structure_items)
+        |> List.cons [%stri open Schema_object]
+    )
+  )
 
 let map_module_expr mapper expr = match expr with
   | { pmod_desc = Pmod_extension ({ txt = "schema" },
