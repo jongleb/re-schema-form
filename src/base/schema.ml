@@ -15,7 +15,8 @@ module rec Schema_object : sig
 
     type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap
 
-    val schema: field_wrap list
+    (* val schema: field_wrap list *)
+    val schema: field_wrap array
     val get: t -> 'a field -> 'a
   end
 
