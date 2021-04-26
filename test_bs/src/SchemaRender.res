@@ -20,7 +20,10 @@ let rec schema_render: type a . a => (module (Object with type t = a)) => React.
         let bool = Schema.get(form_data, b)
         <input type_="checkbox" checked=bool />
      }
-     | Schema.Mk_field (Schema_object(o)) => <div>{handle_object_field(o)}</div>
+     | Schema.Mk_field (Schema_object(o)) => 
+        <div style=(ReactDOM.Style.make(~marginTop="20px", ~marginLeft="40px", ()))>
+            {handle_object_field(o)}
+        </div>
     }
     let items = Belt.Array.mapWithIndex(Schema.schema, (i, ii) => {
         <div key={Belt.Int.toString(i)}>

@@ -1,25 +1,32 @@
 open Schema
 
 module StateSchema = %schema(
- type another_one = {
-   abcd: string,
- }
- type state = {
-   email: string,
+ type passport = {
+   address: string,
+   is_some: bool,
+ } 
+ type app = {
+   passport,
+   name: string,
    age: int,
-   test2: string,
-   test3: another_one,
- };
+ }
 );
 
 open StateSchema;
 
-let ano = { abcd: "HELLO MAOTHER FOCUKER" }
-let form_data = { email: "abcd@mail.ry", age: 11, test2: "fdsdf", test3: ano }
+let passport = {
+  address: "Moscow",
+  is_some: false,
+}
+let app = {
+  name: "Name",
+  age: 666,
+  passport
+}
 
 ReactDOM.render(
   <React.StrictMode> 
-    <SchemaRender schema=(module(State)) form_data /> 
+    <SchemaRender schema=(module(App)) form_data=app /> 
   </React.StrictMode>,
   ReactDOM.querySelector("#root")->Belt.Option.getExn,
 )

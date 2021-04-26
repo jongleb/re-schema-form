@@ -194,7 +194,7 @@ let parse_schema_item_type ~rest all_items i =
   | [%type: int] -> [%expr Mk_field(Schema_number([%e field]))]
   (* | [%type: float] => Some([%expr Schema.Number]) *)
   | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
-  | [%type: bool] -> [%expr Mk_field(Schema_booleang([%e field]))]
+  | [%type: bool] -> [%expr Mk_field(Schema_boolean([%e field]))]
   | _ -> try_parse_as_module ~rest i
 
 let rec parse_schema_items ~rest items = List.map (parse_schema_item_type ~rest items) items
