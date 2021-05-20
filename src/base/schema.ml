@@ -18,6 +18,7 @@ module rec Schema_object : sig
     (* val schema: field_wrap list *)
     val schema: field_wrap array
     val get: t -> 'a field -> 'a
+    val set: t -> 'a field -> 'a -> t
   end
 
 end = Schema_object

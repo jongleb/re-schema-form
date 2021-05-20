@@ -34,7 +34,7 @@ let createType name = {
   ])
 }
 
-let createGetLens name fields = 
+let create_get_lens name fields = 
   let cases = List.map (fun field -> 
     let constr = Ast_helper.Pat.construct 
       { 
@@ -78,6 +78,55 @@ let createGetLens name fields =
   let body =
     Ast_helper.Exp.constraint_ body typeDefinitionFilledWithPolyLocalType in
   [%stri let [%p pat] = fun (type value) -> [%e body]]
+
+let create_set_lens name fields = 
+  let cases = List.map (fun field -> 
+    let constr = Ast_helper.Pat.construct 
+      { 
+        loc = Location.none; 
+        txt = Lident(String.capitalize_ascii(field.pld_name.txt)); 
+      }
+      None in
+    let exp_field = Ast_helper.Exp.record
+      [(
+        {
+          loc = Stdlib.(!) Ast_helper.default_loc; 
+          txt = Lident(field.pld_name.txt)
+        }, 
+        [%expr value]
+      )]
+      (if List.length fields > 1 then Some([%expr values]) else None)
+     in
+    Ast_helper.Exp.case constr exp_field
+  ) fields in
+  let gadtTypePoly =
+    Ast_helper.Typ.mk (Ptyp_constr({txt = Lident(gadtFieldName); loc = Location.none }, [[%type: 'value]])) in
+  let gadtTypeLocal =
+    Ast_helper.Typ.mk
+      (Ptyp_constr({txt = Lident(gadtFieldName); loc = Location.none }, [[%type: value]])) in 
+  let typeDefinition =
+    Ast_helper.Typ.poly
+      [{txt = "value"; loc = Location.none; }]
+      [%type: t -> [%t gadtTypePoly] -> 'value -> t]
+      |> Ast_helper.Typ.force_poly in   
+  let typeDefinitionFilledWithPolyLocalType = [%type:
+      t -> [%t gadtTypeLocal] -> value -> t
+    ] in
+
+  let patMatch =
+    Ast_helper.Exp.mk (
+      Pexp_match(
+        Ast_helper.Exp.mk (Pexp_ident({txt = Lident("field"); loc = Location.none})),
+          cases
+        )
+      ) in  
+  let body = [%expr fun values -> fun field -> fun value -> [%e patMatch]] in
+  let fnName = Ast_helper.Pat.var ({txt = "set"; loc = Location.none}) in 
+  let pat = Ast_helper.Pat.constraint_ fnName typeDefinition in 
+  let body =
+    Ast_helper.Exp.constraint_ body typeDefinitionFilledWithPolyLocalType in
+
+  [%stri let [%p pat] = fun (type value) -> [%e body]] 
 
 let createGadt fields = {
   pstr_loc = Location.none;
@@ -247,7 +296,8 @@ let createObjectModule ~rest name items = {
         createGadt items;
         create_mk_field;
         create_schema_list ~rest items;
-        createGetLens name items;
+        create_get_lens name items;
+        create_set_lens name items;
       ])
     };
   })
