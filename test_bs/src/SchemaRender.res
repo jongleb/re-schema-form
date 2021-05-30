@@ -38,6 +38,7 @@ type rec render_field<_> =
     | TextRender: render_field<string>
     | BoolRender: render_field<bool>
 
+@unboxed
 type rec render_field_wrap = 
     | MkRenderFieldByType((render_field<'a>, (module(FieldRender with type t = 'a)))) : render_field_wrap;
 
@@ -55,11 +56,11 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
         let createSchemaField: type t . (
             ~schemaField: Schema.field<t>,
             ~defaultRender: module(FieldRender with type t = t), 
-            ~getRender: (render_field_wrap) => option<module(FieldRender with type t = t)>
+            ~renderField: render_field<t>
         ) => React.element = (
             ~schemaField,
             ~defaultRender,
-            ~getRender
+            ~renderField
         ) => {
             let module(DefaultComponent): module(FieldRender with type t = t) = defaultRender
             let value = Schema.get(form_data, schemaField)
@@ -67,11 +68,16 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                 Schema.set(form_data, schemaField, e) |> onChange
             let rec loop = l => switch(l){
                 | list{} => <DefaultComponent value onChange />
-                | list{x, ...xs} => {
-                let result = getRender(x)
+                | list{ MkRenderFieldByType(t, c), ...xs} => {
+                    let result: option<module(FieldRender with type t = t)> = switch(t, renderField){
+                        | (TextRender, TextRender) => Some(c)
+                        | (NumberRender, NumberRender) => Some(c)
+                        | (BoolRender, BoolRender) => Some(c)
+                        | _ => None
+                    }
                     switch(result){
-                        |Some(module(Component)) => <Component onChange value/>
-                        |_ => loop(xs)
+                        | Some(module(Component)) => <Component onChange value/>
+                        | _ => loop(xs)
                     }
                 }
             }
@@ -82,30 +88,21 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                 createSchemaField(
                     ~schemaField = s,
                     ~defaultRender = module(TextInputDefaultRender),
-                    ~getRender = (MkRenderFieldByType(t, c)) => switch t {
-                        | TextRender => Some(c)
-                        | _ => None
-                    }
+                    ~renderField = TextRender
                 )
             }
             | Schema.Mk_field (Schema_number(n)) => {
                 createSchemaField(
                     ~schemaField = n,
                     ~defaultRender = module(NumberInputDefaultRender),
-                    ~getRender = (MkRenderFieldByType(t, c)) => switch t {
-                        | NumberRender => Some(c)
-                        | _ => None
-                    }
+                    ~renderField = NumberRender
                 )
             }
             | Schema.Mk_field (Schema_boolean(b)) => {
                 createSchemaField(
                     ~schemaField = b,
                     ~defaultRender = module(BoolInputDefaultRender),
-                    ~getRender = (MkRenderFieldByType(t, c)) => switch t {
-                        | BoolRender => Some(c)
-                        | _ => None
-                    }
+                    ~renderField = BoolRender
                 )
             }
             | Schema.Mk_field (Schema_object(o)) => 
