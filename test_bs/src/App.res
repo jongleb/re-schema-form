@@ -30,12 +30,27 @@ let app = {
 module TextInputRender = {
   type t = string
   @react.component
-  let make = (~value: t, ~onChange: ReactEvent.Form.t => ()) => <input style={ReactDOM.Style.make(~color="#444444", ~fontSize="28px", ())} type_="text" value onChange />
+  let make = (~value: t, ~onChange: t => ()) => {
+    let style = ReactDOM.Style.make(~color="#444444", ~fontSize="28px", ())
+    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    <input style type_="text" value onChange />
+  }
 }
 
-let renders = [
-  MkRender(TextRender, module(TextInputRender))
-]
+module NumberInputRender = {
+  type t = int
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
+    let style = ReactDOM.Style.make(~color="red", ~fontSize="28px", ())
+    <input style type_="number" value=Belt.Int.toString(value) onChange />
+  }
+}
+
+let renders = Belt_List.fromArray([
+  MkRenderFieldByType(TextRender, module(TextInputRender)),
+  MkRenderFieldByType(NumberRender, module(NumberInputRender))
+])
 
 @react.component
 let make = () => {
