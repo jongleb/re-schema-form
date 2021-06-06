@@ -1,6 +1,11 @@
-(* type user = { name: string; age: int; }
+type user = { name: string; age: int; }
 type income = { proof_income: int; additional_income: int; }
-type state = { user: user; income: income; } *)
+type state = { user: user; income: income; }
+
+
+module type FieldRender = sig
+  type t
+end  
 
 module rec Schema_object : sig
   type ('t, 'field) schema = 
@@ -18,11 +23,20 @@ module rec Schema_object : sig
     (* val schema: field_wrap list *)
     val schema: field_wrap array
     val get: t -> 'a field -> 'a
-    val set: t -> 'a field -> 'a -> t
+    (* val set: t -> 'a field -> 'a -> t *)
   end
 
+  module type Schema_config = sig
+
+    include Object
+
+    type field_render = Mk_field_render : ((('a, 'a field) schema) * (module FieldRender with type t = 'a)) -> field_render 
+    val get_field_render: 'a field -> (module FieldRender with type t = 'a) option
+  end  
+
 end = Schema_object
-(* 
+
+
 open Schema_object
 
 module User = struct
@@ -44,8 +58,48 @@ module User = struct
            match field with | Name  -> state.name | Age  -> state.age : 
       t -> value field -> value) 
     
-end 
+end
 
+module NameRender = struct
+  type t = string
+end  
+
+module User_config = struct
+  
+  include User
+
+  type field_render = Mk_field_render : ('a field * (module FieldRender with type t = 'a)) -> field_render
+
+  type field_renders = field_render array
+  let field_renders: field_renders = [| Mk_field_render(Name, (module NameRender)) |]
+
+  type (_,_) eq = Eq : ('a, 'a) eq
+
+  let field_eq (type a) (type b) (a: a field) (b: b field): (a, b) eq option = 
+    match (a, b) with
+      | Name, Name -> Some Eq
+      | Age, Age -> Some Eq
+      | _ -> None
+  
+  let get_dyn : type a. a field -> field_render -> (module FieldRender with type t = a) option =
+    fun a (Mk_field_render(b, x)) ->
+      match field_eq a b with
+        | None -> None
+        | Some Eq -> Some x  
+
+  let get_field_render f =
+    let rec loop (l: field_renders) = match Array.length l with
+      | 0 -> None
+      | _ -> 
+        let sub_cnt = Array.length l - 1 in
+        match get_dyn f l.(0) with 
+          | None -> loop (Array.sub l 1 sub_cnt)
+          | v -> v
+        in           
+        loop field_renders 
+      
+end  
+(*
  module Income = struct
   type t = income
 

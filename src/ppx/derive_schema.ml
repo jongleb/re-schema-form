@@ -8,6 +8,7 @@ open Schema_render_base
 
 let gadtFieldName = "field"
 
+let create_schema_config_name txt = String.concat "_" [String.capitalize_ascii txt; "schema_config"]
 let initial_types = []
 
 let createType name = {
@@ -193,7 +194,7 @@ let try_parse_as_module ~rest i =
     | _ -> Location.raise_errorf "This type field %s is not supported" i.pld_name.txt in
   let field_name = String.capitalize_ascii i.pld_name.txt in
   let pmod_desc = Pmod_ident({
-    txt = Lident(String.capitalize_ascii type_name);
+    txt = Lident(create_schema_config_name type_name);
     loc = Stdlib.(!) Ast_helper.default_loc;
   }) in 
   let pexp_desc = Pexp_pack({
@@ -248,6 +249,44 @@ let parse_schema_item_type ~rest all_items i =
 
 let rec parse_schema_items ~rest items = List.map (parse_schema_item_type ~rest items) items
 
+let create_field_renders fields = 
+  let create_render f = match f.pld_attributes with 
+    | [] -> None
+    | { attr_name; attr_payload } :: xs -> 
+      if attr_name.txt != "schema.ui.render"
+        then None
+      else 
+        let parse_struct s = match s with 
+          | [] -> None
+          | { pstr_desc } :: xs -> 
+            (* Some [%expr Mk_field_render(Name, (module NameRender))] *)
+            match pstr_desc with
+              | Pstr_eval(x, _) -> 
+                let tuple = Ast_helper.Exp.tuple [
+                  {
+                    pexp_loc = Location.none;
+                    pexp_loc_stack = [];
+                    pexp_attributes = [];
+                    pexp_desc = Pexp_construct({
+                      txt = Lident(String.capitalize_ascii f.pld_name.txt);
+                      loc = Stdlib.(!) Ast_helper.default_loc;
+                    }, None)
+                  };
+                  x
+                ] in 
+                let constr = Ast_helper.Exp.construct {
+                  txt = Lident("Mk_field_render");
+                  loc = Stdlib.(!) Ast_helper.default_loc;
+                } (Some tuple) in 
+                Some constr
+              | _ -> None
+        in  
+        match attr_payload with
+          | PStr(s) -> parse_struct s
+          | _ -> None  
+  in  
+  fields |> List.filter_map (create_render) |> Exp.array
+
 (* let rec parse_schema_items items = match items with
   | [] -> { 
       pexp_desc = Pexp_construct({
@@ -279,7 +318,7 @@ let create_schema_list ~rest list = [%stri
  let schema: field_wrap array = [%e Exp.array (parse_schema_items ~rest list)]
 ]
 
-let createObjectModule ~rest name items = {
+let create_object_module ~rest name items = {
   pstr_loc = Location.none;
   pstr_desc = Pstr_module({
     pmb_name = {
@@ -303,11 +342,306 @@ let createObjectModule ~rest name items = {
   })
 }
 
+
+let create_field_eq_cases fields = 
+  let create_case_const f = Ast_helper.Pat.construct 
+    { 
+      loc = Location.none; 
+      txt = Lident(String.capitalize_ascii(f.pld_name.txt)); 
+    }
+    None
+  in
+  let same_cases f = List.init 2 (fun _ -> create_case_const f) in
+  let create_tuple f = f |> same_cases |> Ast_helper.Pat.tuple in
+  let create_constr f = Ast_helper.Exp.case (create_tuple f) [%expr Some Eq] in
+  let none = Ast_helper.Exp.case (Ast_helper.Pat.any ()) [%expr None] in
+  [fields |> List.map (create_constr); [none]] |> List.flatten
+let create_field_eq_matches fields = { 
+  pexp_desc = Pexp_match(
+    {
+      pexp_desc = Pexp_tuple(
+        [
+          {
+            pexp_desc = Pexp_ident({ loc = Location.none; txt = Lident("a") });
+            pexp_loc = Location.none;
+            pexp_attributes = [];
+            pexp_loc_stack = [];
+          };
+          {
+            pexp_desc = Pexp_ident({ loc = Location.none; txt = Lident("b") });
+            pexp_loc = Location.none;
+            pexp_attributes = [];
+            pexp_loc_stack = [];
+          }
+        ]
+      );
+      pexp_loc = Location.none;
+      pexp_attributes = [];
+      pexp_loc_stack = [];
+    },
+    create_field_eq_cases fields;
+  );
+  pexp_loc = Location.none;
+  pexp_attributes = [];
+  pexp_loc_stack = [];
+}
+  
+let create_field_eq fields = 
+  let pattern = {
+      ppat_desc = Ppat_var({
+        txt = "field_eq";
+        loc = Location.none;
+      });
+      ppat_loc = Location.none;
+      ppat_attributes = [];
+      ppat_loc_stack = [];
+  } in
+  let fun_expr = {
+    pexp_desc = Pexp_constraint(
+      create_field_eq_matches fields,
+      {
+        ptyp_desc = Ptyp_constr({
+           loc = Location.none; txt = Lident("option")}, [
+             {
+              ptyp_desc = Ptyp_constr({
+                loc = Location.none; txt = Lident("eq")}, [
+                  {
+                   ptyp_desc = Ptyp_constr({
+                     loc = Location.none; txt = Lident("a")}, []
+                   );
+                   ptyp_loc = Location.none;
+                   ptyp_attributes = [];
+                   ptyp_loc_stack = [];
+                  };
+                  {
+                   ptyp_desc = Ptyp_constr({
+                     loc = Location.none; txt = Lident("b")}, []
+                   );
+                   ptyp_loc = Location.none;
+                   ptyp_attributes = [];
+                   ptyp_loc_stack = [];
+                  }
+                ]
+              );
+              ptyp_loc = Location.none;
+              ptyp_attributes = [];
+              ptyp_loc_stack = [];
+             }
+           ]
+        );
+        ptyp_loc = Location.none;
+        ptyp_attributes = [];
+        ptyp_loc_stack = [];
+      }
+    );
+    pexp_loc = Location.none;
+    pexp_attributes = [];
+    pexp_loc_stack = [];
+  } in
+  let b_arg_pattern = {
+    ppat_desc = Ppat_constraint(
+      {
+        ppat_desc = Ppat_var(
+          { txt = "b";
+            loc = Location.none
+          }
+        );
+        ppat_loc = Location.none;
+        ppat_attributes = [];
+        ppat_loc_stack = [];
+      },
+      {
+        ptyp_desc = Ptyp_constr({
+           loc = Location.none; txt = Lident("field")}, [
+             {
+              ptyp_desc = Ptyp_constr({
+                loc = Location.none; txt = Lident("b")}, []
+              );
+              ptyp_loc = Location.none;
+              ptyp_attributes = [];
+              ptyp_loc_stack = [];
+             }
+           ]
+        );
+        ptyp_loc = Location.none;
+        ptyp_attributes = [];
+        ptyp_loc_stack = [];
+      }
+    );
+    ppat_loc = Location.none;
+    ppat_attributes = [];
+    ppat_loc_stack = [];
+  } in
+  let pexp_fun_b = Pexp_fun(
+    Nolabel,
+    None,
+    b_arg_pattern,
+    fun_expr
+  ) in
+  let a_arg_pattern = {
+    ppat_desc = Ppat_constraint(
+      {
+        ppat_desc = Ppat_var(
+          { txt = "a";
+            loc = Location.none
+          }
+        );
+        ppat_loc = Location.none;
+        ppat_attributes = [];
+        ppat_loc_stack = [];
+      },
+      {
+        ptyp_desc = Ptyp_constr({
+           loc = Location.none; txt = Lident("field")}, [
+             {
+              ptyp_desc = Ptyp_constr({
+                loc = Location.none; txt = Lident("a")}, []
+              );
+              ptyp_loc = Location.none;
+              ptyp_attributes = [];
+              ptyp_loc_stack = [];
+             }
+           ]
+        );
+        ptyp_loc = Location.none;
+        ptyp_attributes = [];
+        ptyp_loc_stack = [];
+      }
+    );
+    ppat_loc = Location.none;
+    ppat_attributes = [];
+    ppat_loc_stack = [];
+  } in
+  let pexp_fun_a = Pexp_fun(
+    Nolabel,
+    None,
+    a_arg_pattern,
+    {
+      pexp_loc = Location.none;
+      pexp_attributes = [];
+      pexp_loc_stack = [];
+      pexp_desc = pexp_fun_b
+    }
+  ) in
+  let expression_fun = {
+    pexp_loc = Location.none;
+    pexp_attributes = [];
+    pexp_loc_stack = [];
+    pexp_desc = pexp_fun_a
+  } in
+  let pexp_newtype_b = Pexp_newtype(
+    {
+      txt = "b";
+      loc = Location.none;
+    },
+    expression_fun
+  ) in
+  let expression_b = {
+    pexp_loc = Location.none;
+    pexp_attributes = [];
+    pexp_loc_stack = [];
+    pexp_desc = pexp_newtype_b
+  } in
+  let pexp_newtype_a = Pexp_newtype(
+    {
+      txt = "a";
+      loc = Location.none;
+    },
+    expression_b
+  ) in
+  let expression = {
+    pexp_loc = Location.none;
+    pexp_attributes = [];
+    pexp_desc = pexp_newtype_a;
+    pexp_loc_stack = [];
+  } in
+  let value_binding = {
+    pvb_pat = pattern;
+    pvb_attributes = [];
+    pvb_loc = Location.none;
+    pvb_expr = expression
+  } in 
+  {
+    pstr_loc = Location.none;
+    pstr_desc = Pstr_value(
+      Nonrecursive,
+      [
+        value_binding
+      ]
+    )
+  }
+
+let create_schema_config_module ~rest name items = {
+  pstr_loc = Location.none;
+  pstr_desc = Pstr_module({
+    pmb_name = {
+      txt = Some(create_schema_config_name name.txt);
+      loc = Location.none;
+    };
+    pmb_attributes = [];
+    pmb_loc = Location.none;
+    pmb_expr = {
+      pmod_attributes = [];
+      pmod_loc = Location.none;
+      pmod_desc = Pmod_structure([
+        { pstr_desc = Pstr_include({
+          pincl_loc = Location.none;
+          pincl_attributes = [];
+          pincl_mod = {
+            pmod_attributes = [];
+            pmod_loc = Location.none;
+            pmod_desc = Pmod_ident({
+              txt = Lident(String.capitalize_ascii name.txt);
+              loc = Stdlib.(!) Ast_helper.default_loc;
+            })
+          }
+        });
+          pstr_loc = Location.none;
+        };
+        [%stri 
+          type field_render =
+            Mk_field_render : ('a field * (module FieldRender with type t = 'a)) -> field_render   
+        ];
+        [%stri type field_renders = field_render array];
+        [%stri 
+          let field_renders: field_renders = [%e create_field_renders items]
+        ];
+        [%stri
+          type (_,_) eq = Eq : ('a, 'a) eq
+        ];
+        create_field_eq items;
+        [%stri
+          let get_dyn : type a. a field -> field_render -> (module FieldRender with type t = a) option =
+            fun a (Mk_field_render(b, x)) ->
+              match field_eq a b with
+                | None -> None
+                | Some Eq -> Some x  
+        ];
+        [%stri
+          let get_field_render f =
+            let rec loop (l: field_renders) = match Array.length l with
+              | 0 -> None
+              | _ -> 
+                let sub_cnt = Array.length l - 1 in
+                match get_dyn f l.(0) with 
+                  | None -> loop (Array.sub l 1 sub_cnt)
+                  | v -> v
+                in           
+                loop field_renders 
+        ];
+      ])
+    };
+  })
+}
+
 let packModule ~rest i = match i with
   | Pstr_type (_, [{ ptype_kind; ptype_name }]) -> match ptype_kind with
-    | Ptype_record (labels) -> (createObjectModule ~rest) ptype_name labels 
+    | Ptype_record (labels) -> [
+      (create_object_module ~rest) ptype_name labels;
+      (create_schema_config_module ~rest) ptype_name labels
+    ]
 
-let create_structure_schema ~rest root items = List.map (packModule ~rest) items
+let create_structure_schema ~rest root items = List.concat_map (packModule ~rest) items
 
 let createModule old_struture_items structure_items =
   let root = structure_items |> List.rev |> List.hd in

@@ -1,5 +1,15 @@
-open Schema
+open SchemaRender.Schema_object
 open SchemaRender
+
+module NameInputRender = {
+  type t = string
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let style = ReactDOM.Style.make(~color="#444444", ~fontSize="58px", ())
+    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    <input style type_="text" value onChange />
+  }
+}
 
 module StateSchema = %schema(
  type passport = {
@@ -8,6 +18,7 @@ module StateSchema = %schema(
  } 
  type app = {
    passport,
+   @schema.ui.render(module(NameInputRender))
    name: string,
    age: int,
    test_field: int,
@@ -52,6 +63,7 @@ let renders = Belt_List.fromArray([
   MkRenderFieldByType(NumberRender, module(NumberInputRender))
 ])
 
+
 @react.component
 let make = () => {
   let (state, setState) = React.useState(_ => app);
@@ -61,5 +73,5 @@ let make = () => {
       setState(_ => v);
   };
 
-  <SchemaRender renders schema=(module(App)) form_data=state onChange /> 
+  <SchemaRender renders schema=(module(App_schema_config)) form_data=state onChange /> 
 };
