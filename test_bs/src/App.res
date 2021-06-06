@@ -1,13 +1,22 @@
-open SchemaRender.Schema_object
 open SchemaRender
 
 module NameInputRender = {
   type t = string
   @react.component
   let make = (~value: t, ~onChange: t => ()) => {
-    let style = ReactDOM.Style.make(~color="#444444", ~fontSize="58px", ())
+    let style = ReactDOM.Style.make(~color="#71bc78", ~fontSize="28px", ())
     let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
     <input style type_="text" value onChange />
+  }
+}
+
+module AgeInputRender = {
+  type t = int
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let style = ReactDOM.Style.make(~color="#007dff", ~fontSize="28px", ())
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
+    <input style type_="text" value=Belt.Int.toString(value) onChange />
   }
 }
 
@@ -20,19 +29,19 @@ module StateSchema = %schema(
    passport,
    @schema.ui.render(module(NameInputRender))
    name: string,
+   @schema.ui.render(module(AgeInputRender))
    age: int,
    test_field: int,
  }
 );
 
 open StateSchema;
-
 let passport = {
   address: "Moscow",
   is_male: false,
 }
 let app = {
-  name: "Name",
+  name: "Name!",
   age: 666,
   test_field: 900,
   passport
@@ -62,6 +71,8 @@ let renders = Belt_List.fromArray([
   MkRenderFieldByType(TextRender, module(TextInputRender)),
   MkRenderFieldByType(NumberRender, module(NumberInputRender))
 ])
+
+Js.Console.log(App_schema_config.field_renders)
 
 
 @react.component

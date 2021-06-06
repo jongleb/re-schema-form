@@ -252,14 +252,13 @@ let rec parse_schema_items ~rest items = List.map (parse_schema_item_type ~rest 
 let create_field_renders fields = 
   let create_render f = match f.pld_attributes with 
     | [] -> None
-    | { attr_name; attr_payload } :: xs -> 
-      if attr_name.txt != "schema.ui.render"
+    | { attr_name = { txt }; attr_payload } :: xs -> 
+      if String.compare txt "schema.ui.render" != 0
         then None
-      else 
+      else
         let parse_struct s = match s with 
           | [] -> None
           | { pstr_desc } :: xs -> 
-            (* Some [%expr Mk_field_render(Name, (module NameRender))] *)
             match pstr_desc with
               | Pstr_eval(x, _) -> 
                 let tuple = Ast_helper.Exp.tuple [
@@ -274,17 +273,14 @@ let create_field_renders fields =
                   };
                   x
                 ] in 
-                let constr = Ast_helper.Exp.construct {
-                  txt = Lident("Mk_field_render");
-                  loc = Stdlib.(!) Ast_helper.default_loc;
-                } (Some tuple) in 
+                let constr = [%expr Mk_field_render([%e tuple])] in 
                 Some constr
               | _ -> None
-        in  
+        in
         match attr_payload with
           | PStr(s) -> parse_struct s
           | _ -> None  
-  in  
+  in
   fields |> List.filter_map (create_render) |> Exp.array
 
 (* let rec parse_schema_items items = match items with
