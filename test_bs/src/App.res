@@ -24,7 +24,7 @@ module StateSchema = %schema(
  type passport = {
    address: string,
    is_male: bool,
- } 
+ }
  type app = {
    passport,
    @schema.ui.render(module(NameInputRender))
@@ -36,9 +36,10 @@ module StateSchema = %schema(
 );
 
 open StateSchema;
+
 let passport = {
   address: "Moscow",
-  is_male: false,
+  is_male: true,
 }
 let app = {
   name: "Name!",
@@ -69,7 +70,7 @@ module NumberInputRender = {
 
 let renders = Belt_List.fromArray([
   MkRenderFieldByType(TextRender, module(TextInputRender)),
-  MkRenderFieldByType(NumberRender, module(NumberInputRender))
+  MkRenderFieldByType(NumberRender(NumberIntRender), module(NumberInputRender))
 ])
 
 Js.Console.log(App_schema_config.field_renders)

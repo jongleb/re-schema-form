@@ -5,9 +5,14 @@ module type FieldRender = {
 }
 
 module rec Schema_object: {
+
+  type rec schema_number<'t> =
+    | Schema_number_int: schema_number<int>
+    | Schema_number_float: schema_number<float>
+    
   type rec schema<'t, 'field> =
     | Schema_string('field): schema<string, 'field>
-    | Schema_number('field): schema<int, 'field>
+    | Schema_number('field, schema_number<'t>): schema<'t, 'field>
     | Schema_boolean('field): schema<bool, 'field>
     | Schema_object(
         ('field, module(Schema_object.Schema_config with type t = 't)),
@@ -45,12 +50,21 @@ module TextInputDefaultRender = {
   }
 }
 
-module NumberInputDefaultRender = {
+module NumberIntInputDefaultRender = {
   type t = int
   @react.component
   let make = (~value: t, ~onChange: t => ()) => {
     let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
     <input type_="number" value=Belt.Int.toString(value) onChange />
+  }
+}
+
+module NumberFloatInputDefaultRender = {
+  type t = float
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
+    <input type_="number" value=Belt.Float.toString(value) onChange />
   }
 }
 
@@ -63,8 +77,12 @@ module BoolInputDefaultRender = {
   }
 }
 
-type rec render_field<_> =
-    | NumberRender: render_field<int>
+type rec render_number_field<_> =
+    | NumberIntRender: render_number_field<int>
+    | NumberFloatRender: render_number_field<float>
+
+type rec render_field<'t> =
+    | NumberRender(render_number_field<'t>): render_field<'t>
     | TextRender: render_field<string>
     | BoolRender: render_field<bool>
 
@@ -102,7 +120,8 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                     let concrete_field: option<module(FieldRender with type t = t)> = Schema.get_field_render(schemaField)
                     let result: option<module(FieldRender with type t = t)> = switch(t, renderField){
                         | (TextRender, TextRender) => Some(c)
-                        | (NumberRender, NumberRender) => Some(c)
+                        | (NumberRender(NumberIntRender), NumberRender(NumberIntRender)) => Some(c)
+                        | (NumberRender(NumberFloatRender), NumberRender(NumberFloatRender)) => Some(c)
                         | (BoolRender, BoolRender) => Some(c)
                         | _ => None
                     }
@@ -123,11 +142,18 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                     ~renderField = TextRender
                 )
             }
-            | Schema.Mk_field (Schema_number(n)) => {
+            | Schema.Mk_field (Schema_number(n, Schema_number_int)) => {
                 createSchemaField(
                     ~schemaField = n,
-                    ~defaultRender = module(NumberInputDefaultRender),
-                    ~renderField = NumberRender
+                    ~defaultRender = module(NumberIntInputDefaultRender),
+                    ~renderField = NumberRender(NumberIntRender)
+                )
+            }
+            | Schema.Mk_field (Schema_number(n, Schema_number_float)) => {
+                createSchemaField(
+                    ~schemaField = n,
+                    ~defaultRender = module(NumberFloatInputDefaultRender),
+                    ~renderField = NumberRender(NumberFloatRender)
                 )
             }
             | Schema.Mk_field (Schema_boolean(b)) => {

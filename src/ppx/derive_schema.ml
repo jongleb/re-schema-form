@@ -241,8 +241,8 @@ let parse_schema_item_type ~rest all_items i =
     pexp_loc_stack = [];
   }  in
   match i.pld_type with
-  | [%type: int] -> [%expr Mk_field(Schema_number([%e field]))]
-  (* | [%type: float] => Some([%expr Schema.Number]) *)
+  | [%type: int] -> [%expr Mk_field(Schema_number([%e field], Schema_number_int))]
+  | [%type: float] -> [%expr Mk_field(Schema_number([%e field], Schema_number_float))]
   | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
   | [%type: bool] -> [%expr Mk_field(Schema_boolean([%e field]))]
   | _ -> try_parse_as_module ~rest i
