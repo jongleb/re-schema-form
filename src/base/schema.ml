@@ -72,7 +72,11 @@ end
 
 module NameRender = struct
   type t = string
-end  
+end 
+
+module MiddleNameRender = struct
+  type t = string option
+end 
 
 module User_config = struct
   
@@ -81,7 +85,10 @@ module User_config = struct
   type field_render = Mk_field_render : ('a field * (module FieldRender with type t = 'a)) -> field_render
 
   type field_renders = field_render array
-  let field_renders: field_renders = [| Mk_field_render(Name, (module NameRender)) |]
+  let field_renders: field_renders = [| 
+    Mk_field_render(Name, (module NameRender));
+    Mk_field_render(MiddleName, (module MiddleNameRender))
+  |]
 
   type (_,_) eq = Eq : ('a, 'a) eq
 

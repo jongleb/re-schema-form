@@ -249,6 +249,10 @@ let parse_schema_item_type ~rest all_items i =
   | [%type: float] -> [%expr Mk_field(Schema_number([%e field], Schema_number_float))]
   | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
   | [%type: bool] -> [%expr Mk_field(Schema_boolean([%e field]))]
+  | [%type: int option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_int))]
+  | [%type: float option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_float))]
+  | [%type: string option] -> [%expr Mk_nullable_field(Schema_string([%e field]))]
+  | [%type: bool option] -> [%expr Mk_nullable_field(Schema_boolean([%e field]))]
   | _ -> try_parse_as_module ~rest i
 
 let rec parse_schema_items ~rest items = List.map (parse_schema_item_type ~rest items) items

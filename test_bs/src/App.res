@@ -20,6 +20,20 @@ module AgeInputRender = {
   }
 }
 
+module SomeNullableFieldInputRender = {
+  type t = option<int>
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let style = ReactDOM.Style.make(~color="#007dff", ~fontSize="28px", ())
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
+    let inputValue = switch value {
+      | Some(v) => Belt.Int.toString(v)
+      | _ => ""
+    }
+    <input style type_="number" value=inputValue onChange />
+  }
+}
+
 module StateSchema = %schema(
  type passport = {
    address: string,
@@ -33,6 +47,9 @@ module StateSchema = %schema(
    age: int,
    test_field: int,
    money: float,
+   some_nullable_field: option<string>,
+   @schema.ui.render(module(SomeNullableFieldInputRender))
+   some_nullable_field_2: option<int>
  }
 );
 
@@ -47,7 +64,9 @@ let app = {
   age: 666,
   test_field: 900,
   money: 34.6,
-  passport
+  passport,
+  some_nullable_field: None,
+  some_nullable_field_2: None
 }
 
 module TextInputRender = {

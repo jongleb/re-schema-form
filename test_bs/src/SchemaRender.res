@@ -65,12 +65,12 @@ module OptionNumberIntInputDefaultRender = {
   type t = option<int>
   @react.component
   let make = (~value: t, ~onChange: t => ()) => {
-    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
     let inputValue = switch value {
         | Some(v) => Belt.Int.toString(v)
         | _ => ""
     }
-    <input type_="text" value=inputValue onChange />
+    <input type_="number" value=inputValue onChange />
   }
 }
 
@@ -78,12 +78,12 @@ module OptionNumberFloatInputDefaultRender = {
   type t = option<float>
   @react.component
   let make = (~value: t, ~onChange: t => ()) => {
-    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
     let inputValue = switch value {
         | Some(v) => Belt.Float.toString(v)
         | _ => ""
     }
-    <input type_="text" value=inputValue onChange />
+    <input type_="number" value=inputValue onChange />
   }
 }
 
