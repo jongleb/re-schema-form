@@ -16,13 +16,15 @@ module rec Schema_object: {
     | Schema_boolean('field): schema<bool, 'field>
     | Schema_object(
         ('field, module(Schema_object.Schema_config with type t = 't)),
-      ): schema<'t, 'field>
+      ): schema<'t, 'field>;
 
   module type Object = {
     type t
     type field<_>
 
-    type rec field_wrap = Mk_field(schema<'a, field<'a>>): field_wrap
+    type rec field_wrap =
+        | Mk_field(schema<'a, field<'a>>): field_wrap
+        | Mk_nullable_field(schema<'a, field<option<'a>>>): field_wrap;
 
     let schema: array<field_wrap>
     let get: (t, field<'a>) => 'a
@@ -47,6 +49,41 @@ module TextInputDefaultRender = {
   let make = (~value: t, ~onChange: string => ()) => {
     let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
     <input type_="text" value onChange />
+  }
+}
+
+module OptionTextInputDefaultRender = {
+  type t = option<string>
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    <input type_="text" value=Belt.Option.getWithDefault(value, "") onChange />
+  }
+}
+
+module OptionNumberIntInputDefaultRender = {
+  type t = option<int>
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    let inputValue = switch value {
+        | Some(v) => Belt.Int.toString(v)
+        | _ => ""
+    }
+    <input type_="text" value=inputValue onChange />
+  }
+}
+
+module OptionNumberFloatInputDefaultRender = {
+  type t = option<float>
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
+    let inputValue = switch value {
+        | Some(v) => Belt.Float.toString(v)
+        | _ => ""
+    }
+    <input type_="text" value=inputValue onChange />
   }
 }
 
@@ -77,6 +114,15 @@ module BoolInputDefaultRender = {
   }
 }
 
+module OptionBoolInputDefaultRender = {
+  type t = option<bool>
+  @react.component
+  let make = (~value: t, ~onChange: t => ()) => {
+    let onChange = e => ReactEvent.Form.target(e)["checked"] |> onChange
+    <input type_="checkbox" checked=Belt.Option.getWithDefault(value, false) onChange />
+  }
+}
+
 type rec render_number_field<_> =
     | NumberIntRender: render_number_field<int>
     | NumberFloatRender: render_number_field<float>
@@ -85,11 +131,16 @@ type rec render_field<'t> =
     | NumberRender(render_number_field<'t>): render_field<'t>
     | TextRender: render_field<string>
     | BoolRender: render_field<bool>
+    | OptionTextRender: render_field<option<string>>
+    | OptionNumberRender(render_number_field<'t>): render_field<option<'t>>
+    | OptionBoolRender: render_field<option<bool>>
 
 type rec render_field_wrap = 
     | MkRenderFieldByType(render_field<'a>, (module(FieldRender with type t = 'a))) : render_field_wrap;
 
 type renders = list<render_field_wrap>
+
+type rec eq<_,_> = Eq: eq<'a, 'a>
 
 
 let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => (module (Schema_config with type t = a)) => React.element = (~renders, ~onChange, form_data, schema) => {
@@ -123,6 +174,10 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                         | (NumberRender(NumberIntRender), NumberRender(NumberIntRender)) => Some(c)
                         | (NumberRender(NumberFloatRender), NumberRender(NumberFloatRender)) => Some(c)
                         | (BoolRender, BoolRender) => Some(c)
+                        | (OptionBoolRender, OptionBoolRender) => Some(c)
+                        | (OptionNumberRender(NumberIntRender), OptionNumberRender(NumberIntRender)) => Some(c)
+                        | (OptionNumberRender(NumberFloatRender), OptionNumberRender(NumberFloatRender)) => Some(c)
+                        | (OptionTextRender, OptionTextRender) => Some(c)
                         | _ => None
                     }
                     switch(concrete_field, result){
@@ -133,13 +188,20 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                 }
             }
             loop(renders)
-        }   
+        }
         let handle_item = i => switch (i) {
             | Schema.Mk_field (Schema_string(s)) => {
                 createSchemaField(
                     ~schemaField = s,
                     ~defaultRender = module(TextInputDefaultRender),
                     ~renderField = TextRender
+                )
+            }
+            | Schema.Mk_nullable_field (Schema_string(s)) => {
+                createSchemaField(
+                    ~schemaField = s,
+                    ~defaultRender = module(OptionTextInputDefaultRender),
+                    ~renderField = OptionTextRender
                 )
             }
             | Schema.Mk_field (Schema_number(n, Schema_number_int)) => {
@@ -149,11 +211,25 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                     ~renderField = NumberRender(NumberIntRender)
                 )
             }
+            | Schema.Mk_nullable_field (Schema_number(n, Schema_number_int)) => {
+                createSchemaField(
+                    ~schemaField = n,
+                    ~defaultRender = module(OptionNumberIntInputDefaultRender),
+                    ~renderField = OptionNumberRender(NumberIntRender)
+                )
+            }
             | Schema.Mk_field (Schema_number(n, Schema_number_float)) => {
                 createSchemaField(
                     ~schemaField = n,
                     ~defaultRender = module(NumberFloatInputDefaultRender),
                     ~renderField = NumberRender(NumberFloatRender)
+                )
+            }
+            | Schema.Mk_nullable_field (Schema_number(n, Schema_number_float)) => {
+                createSchemaField(
+                    ~schemaField = n,
+                    ~defaultRender = module(OptionNumberFloatInputDefaultRender),
+                    ~renderField = OptionNumberRender(NumberFloatRender)
                 )
             }
             | Schema.Mk_field (Schema_boolean(b)) => {
@@ -163,11 +239,20 @@ let schema_render: type a . (~renders: renders, ~onChange: ((a) => ())) => a => 
                     ~renderField = BoolRender
                 )
             }
-            | Schema.Mk_field (Schema_object(o)) => 
+            | Schema.Mk_nullable_field (Schema_boolean(b)) => {
+                createSchemaField(
+                    ~schemaField = b,
+                    ~defaultRender = module(OptionBoolInputDefaultRender),
+                    ~renderField = OptionBoolRender
+                )
+            }
+            | Schema.Mk_nullable_field (Schema_object(_)) => React.null
+            | Schema.Mk_field (Schema_object(o)) => {
                 <div style=(ReactDOM.Style.make(~marginTop="20px", ~marginLeft="40px", ()))>
                     {handle_object_field(o)}
                 </div>
             }
+        }
             let items = Belt.Array.mapWithIndex(Schema.schema, (i, ii) => {
                 <div key={Belt.Int.toString(i)}>
                     {handle_item(ii)}

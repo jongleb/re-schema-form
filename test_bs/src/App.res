@@ -32,6 +32,7 @@ module StateSchema = %schema(
    @schema.ui.render(module(AgeInputRender))
    age: int,
    test_field: int,
+   money: float,
  }
 );
 
@@ -45,6 +46,7 @@ let app = {
   name: "Name!",
   age: 666,
   test_field: 900,
+  money: 34.6,
   passport
 }
 

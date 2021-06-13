@@ -186,7 +186,11 @@ let createGadt fields = {
     )
 }
 
-let create_mk_field = [%stri type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap]
+let create_mk_field = [%stri 
+  type field_wrap = 
+    | Mk_field : ('a, 'a field) schema -> field_wrap
+    | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
+]
 
 let try_parse_as_module ~rest i =
   let type_name = match i.pld_type.ptyp_desc with

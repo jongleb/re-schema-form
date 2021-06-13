@@ -1,4 +1,4 @@
-type user = { name: string; age: int; }
+type user = { name: string; age: int; middleName: string option }
 type income = { proof_income: int; additional_income: int; }
 type state = { user: user; income: income; }
 
@@ -18,7 +18,10 @@ module rec Schema_object : sig
     type t
     type _ field
 
-    type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap
+    type field_wrap = 
+      | Mk_field : ('a, 'a field) schema -> field_wrap
+      | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
+
 
     (* val schema: field_wrap list *)
     val schema: field_wrap array
@@ -45,17 +48,24 @@ module User = struct
   type 'a field =
     | Name: string field
     | Age: int field
+    | MiddleName: string option field
 
-  type field_wrap = Mk_field : ('a, 'a field) schema -> field_wrap
+  type field_wrap = 
+    | Mk_field : ('a, 'a field) schema -> field_wrap
+    | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
     
   let schema = 
     [ Mk_field(Schema_number(Age));
-      Mk_field(Schema_string(Name))
+      Mk_field(Schema_string(Name));
+      Mk_nullable_field(Schema_string(MiddleName))
     ]
   let get : t -> 'a field -> 'a = fun (type value) ->
       (fun state  ->
          fun field  ->
-           match field with | Name  -> state.name | Age  -> state.age : 
+           match field with 
+            | Name  -> state.name 
+            | Age  -> state.age
+            | MiddleName  -> state.middleName : 
       t -> value field -> value) 
     
 end
@@ -79,6 +89,7 @@ module User_config = struct
     match (a, b) with
       | Name, Name -> Some Eq
       | Age, Age -> Some Eq
+      | MiddleName, MiddleName -> Some Eq
       | _ -> None
   
   let get_dyn : type a. a field -> field_render -> (module FieldRender with type t = a) option =
