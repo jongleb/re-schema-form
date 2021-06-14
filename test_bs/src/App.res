@@ -16,7 +16,7 @@ module AgeInputRender = {
   let make = (~value: t, ~onChange: t => ()) => {
     let style = ReactDOM.Style.make(~color="#007dff", ~fontSize="28px", ())
     let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
-    <input style type_="text" value=Belt.Int.toString(value) onChange />
+    <input style type_="number" value=Belt.Int.toString(value) onChange />
   }
 }
 
@@ -25,7 +25,7 @@ module SomeNullableFieldInputRender = {
   @react.component
   let make = (~value: t, ~onChange: t => ()) => {
     let style = ReactDOM.Style.make(~color="#007dff", ~fontSize="28px", ())
-    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
+    let onChange = e => Some(ReactEvent.Form.target(e)["valueAsNumber"]) |> onChange
     let inputValue = switch value {
       | Some(v) => Belt.Int.toString(v)
       | _ => ""
@@ -93,8 +93,6 @@ let renders = Belt_List.fromArray([
   MkRenderFieldByType(TextRender, module(TextInputRender)),
   MkRenderFieldByType(NumberRender(NumberIntRender), module(NumberInputRender))
 ])
-
-Js.Console.log(App_schema_config.field_renders)
 
 
 @react.component

@@ -8,6 +8,7 @@ module type FieldRender = sig
 end  
 
 module rec Schema_object : sig
+
   type ('t, 'field) schema = 
     | Schema_string: 'field -> (string, 'field) schema
     | Schema_number: 'field -> (int, 'field) schema
@@ -57,7 +58,7 @@ module User = struct
   let schema = 
     [ Mk_field(Schema_number(Age));
       Mk_field(Schema_string(Name));
-      Mk_nullable_field(Schema_string(MiddleName))
+      Mk_nullable_field(Schema_string(MiddleName));
     ]
   let get : t -> 'a field -> 'a = fun (type value) ->
       (fun state  ->
