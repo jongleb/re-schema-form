@@ -8,7 +8,7 @@ module NameInputRender = {
     let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
     <input style type_="text" value onChange />
   }
-}
+} 
 
 module AgeInputRender = {
   type t = int
@@ -35,6 +35,7 @@ module SomeNullableFieldInputRender = {
 }
 
 module StateSchema = %schema(
+ type schema_meta = {name: string}
  type passport = {
    address: string,
    is_male: bool,
@@ -42,31 +43,50 @@ module StateSchema = %schema(
  type app = {
    passport,
    @schema.ui.render(module(NameInputRender))
-   name: string,
+   @schema.meta({name: "Name 2"})
+   name2: string,
    @schema.ui.render(module(AgeInputRender))
    age: int,
    test_field: int,
    money: float,
    some_nullable_field: option<string>,
    @schema.ui.render(module(SomeNullableFieldInputRender))
-   some_nullable_field_2: option<int>
+   some_nullable_field_2: option<int>,
+   some_array_field: array<int>,
+   some_array_field_bool: array<bool>
  }
 );
 
 open StateSchema;
+
+module FieldWrapRender = {
+  type t = option<StateSchema.schema_meta>
+  @react.component
+  let make = (~meta: option<StateSchema.schema_meta>, ~children ) => {
+    let { name } = {name: "No label"} |> Belt.Option.getWithDefault(meta)
+    (
+      <div>
+        <span>{name |> React.string}</span>
+        <div>{children}</div>
+      </div>
+    )
+  }
+}
 
 let passport = {
   address: "Moscow",
   is_male: true,
 }
 let app = {
-  name: "Name!",
+  name2: "Name!",
   age: 666,
   test_field: 900,
   money: 34.6,
   passport,
   some_nullable_field: None,
-  some_nullable_field_2: None
+  some_nullable_field_2: None,
+  some_array_field: [1,2,3,4],
+  some_array_field_bool: [true, true, true, false]
 }
 
 module TextInputRender = {
@@ -94,7 +114,6 @@ let renders = Belt_List.fromArray([
   MkRenderFieldByType(NumberRender(NumberIntRender), module(NumberInputRender))
 ])
 
-
 @react.component
 let make = () => {
   let (state, setState) = React.useState(_ => app);
@@ -104,5 +123,5 @@ let make = () => {
       setState(_ => v);
   };
 
-  <SchemaRender renders schema=(module(App_schema_config)) form_data=state onChange /> 
+  <SchemaRender field_wrappers=[(FieldWrap, module(FieldWrapRender))] renders schema=(module(App_schema_config)) form_data=state onChange /> 
 };

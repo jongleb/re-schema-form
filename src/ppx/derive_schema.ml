@@ -186,11 +186,30 @@ let createGadt fields = {
     )
 }
 
-let create_mk_field = [%stri 
+let create_mk_field = [%stri
   type field_wrap = 
-    | Mk_field : ('a, 'a field) schema -> field_wrap
-    | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
+    | Mk_field : ('a, 'a field, m) schema * m -> field_wrap
+    | Mk_nullable_field : ('a, 'a option field, m) schema * m -> field_wrap
+    | Mk_array_field : ('a, 'a array field, m) schema * m -> field_wrap
 ]
+
+let create_field_meta field = 
+  let is_field_meta { attr_name = { txt }; attr_payload } = String.compare txt "schema.meta" == 0 in
+    field.pld_attributes 
+    |> List.find_opt is_field_meta
+    |> Option.map(fun { attr_name = { txt }; attr_payload } ->
+      let parse_struct s = match s with 
+              | [] -> [%expr None]
+              | { pstr_desc } :: xs -> 
+                match pstr_desc with
+                  | Pstr_eval(exp, _) -> [%expr Some([%e exp])]
+                  | _ ->  [%expr None]
+            in
+            match attr_payload with
+              | PStr(s) -> parse_struct s
+              | _ -> [%expr None]
+      ) 
+    |> Option.value ~default:[%expr None]
 
 let try_parse_as_module ~rest i =
   let type_name = match i.pld_type.ptyp_desc with
@@ -228,7 +247,8 @@ let try_parse_as_module ~rest i =
     pexp_attributes = [];
     pexp_loc_stack = [];
   } in 
-  [%expr Mk_field(Schema_object([%e tuple_expr]))]  
+  [%expr Mk_field(Schema_object([%e tuple_expr]), [%e create_field_meta i])]
+
 
 let parse_schema_item_type ~rest all_items i =
   let field_desc = Pexp_construct(
@@ -245,14 +265,18 @@ let parse_schema_item_type ~rest all_items i =
     pexp_loc_stack = [];
   }  in
   match i.pld_type with
-  | [%type: int] -> [%expr Mk_field(Schema_number([%e field], Schema_number_int))]
-  | [%type: float] -> [%expr Mk_field(Schema_number([%e field], Schema_number_float))]
-  | [%type: string] -> [%expr Mk_field(Schema_string([%e field]))]
-  | [%type: bool] -> [%expr Mk_field(Schema_boolean([%e field]))]
-  | [%type: int option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_int))]
-  | [%type: float option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_float))]
-  | [%type: string option] -> [%expr Mk_nullable_field(Schema_string([%e field]))]
-  | [%type: bool option] -> [%expr Mk_nullable_field(Schema_boolean([%e field]))]
+  | [%type: int] -> [%expr Mk_field(Schema_number([%e field], Schema_number_int), [%e create_field_meta i])]
+  | [%type: float] -> [%expr Mk_field(Schema_number([%e field], Schema_number_float), [%e create_field_meta i])]
+  | [%type: string] -> [%expr Mk_field(Schema_string([%e field]), [%e create_field_meta i])]
+  | [%type: bool] -> [%expr Mk_field(Schema_boolean([%e field]), [%e create_field_meta i])]
+  | [%type: int option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_int), [%e create_field_meta i])]
+  | [%type: float option] -> [%expr Mk_nullable_field(Schema_number([%e field], Schema_number_float), [%e create_field_meta i])]
+  | [%type: string option] -> [%expr Mk_nullable_field(Schema_string([%e field]), [%e create_field_meta i])]
+  | [%type: bool option] -> [%expr Mk_nullable_field(Schema_boolean([%e field]), [%e create_field_meta i])]
+  | [%type: int array] -> [%expr Mk_array_field(Schema_number([%e field], Schema_number_int), [%e create_field_meta i])]
+  | [%type: float array] -> [%expr Mk_array_field(Schema_number([%e field], Schema_number_float), [%e create_field_meta i])]
+  | [%type: string array] -> [%expr Mk_array_field(Schema_string([%e field]), [%e create_field_meta i])]
+  | [%type: bool array] -> [%expr Mk_array_field(Schema_boolean([%e field]), [%e create_field_meta i])]
   | _ -> try_parse_as_module ~rest i
 
 let rec parse_schema_items ~rest items = List.map (parse_schema_item_type ~rest items) items
@@ -336,6 +360,7 @@ let create_object_module ~rest name items = {
       pmod_loc = Location.none;
       pmod_desc = Pmod_structure([
         createType name;
+        [%stri type m = schema_meta option];
         createGadt items;
         create_mk_field;
         create_schema_list ~rest items;
@@ -345,7 +370,6 @@ let create_object_module ~rest name items = {
     };
   })
 }
-
 
 let create_field_eq_cases fields = 
   let create_case_const f = Ast_helper.Pat.construct 

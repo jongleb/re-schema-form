@@ -20,7 +20,7 @@ module rec Schema_object : sig
     type _ field
 
     type field_wrap = 
-      | Mk_field : ('a, 'a field) schema -> field_wrap
+      | Mk_field : (('a, 'a field) schema * 'm option) -> field_wrap
       | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
 
 
@@ -43,6 +43,10 @@ end = Schema_object
 
 open Schema_object
 
+type payload = {
+  name: string
+}
+
 module User = struct
   type t = user
 
@@ -52,12 +56,12 @@ module User = struct
     | MiddleName: string option field
 
   type field_wrap = 
-    | Mk_field : ('a, 'a field) schema -> field_wrap
+    | Mk_field :(('a, 'a field) schema * 'm option) -> field_wrap
     | Mk_nullable_field : ('a, 'a option field) schema -> field_wrap
     
   let schema = 
-    [ Mk_field(Schema_number(Age));
-      Mk_field(Schema_string(Name));
+    [ Mk_field(Schema_number(Age), None);
+      Mk_field(Schema_string(Name), None);
       Mk_nullable_field(Schema_string(MiddleName));
     ]
   let get : t -> 'a field -> 'a = fun (type value) ->
@@ -66,7 +70,7 @@ module User = struct
            match field with 
             | Name  -> state.name 
             | Age  -> state.age
-            | MiddleName  -> state.middleName : 
+            | MiddleName  -> state.middleName :
       t -> value field -> value) 
     
 end
