@@ -1,10 +1,10 @@
 {
   "checksum": "d331a2e6c6fbc1abdc8b6c574a0562a0",
-  "root": "schema_render@link-dev:./package.json",
+  "root": "re_schema_form@link-dev:./package.json",
   "node": {
-    "schema_render@link-dev:./package.json": {
-      "id": "schema_render@link-dev:./package.json",
-      "name": "schema_render",
+    "re_schema_form@link-dev:./package.json": {
+      "id": "re_schema_form@link-dev:./package.json",
+      "name": "re_schema_form",
       "version": "link-dev:./package.json",
       "source": {
         "type": "link-dev",

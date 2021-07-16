@@ -1,6 +1,11 @@
 {
-  "name": "schema_render",
-  "esy": { "build": "dune build -p #{self.name}" },
+  "name": "re_schema_form",
+  "esy": { 
+    "build": "dune build -p #{self.name}"
+  },
+  "scripts": {
+    "build": "esy build"
+  },
   "dependencies": {
     "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
     "@opam/dune": ">=2.6",

@@ -1,0 +1,29 @@
+{
+  "name": "reason-react-realworld-example-app",
+  "version": "0.1.0",
+  "author": "Jihchi Lee <achi@987.tw>",
+  "license": "MIT",
+  "keywords": [
+    "ReScript",
+    "BuckleScript",
+    "reason-react",
+    "ReasonML",
+    "react"
+  ],
+  "scripts": {
+    "build": "snowpack build",
+    "build:res": "bsb -make-world",
+    "clean": "npm run clean:res",
+    "clean:res": "bsb -clean-world",
+    "format": "npm run format:js && npm run format:res",
+    "format:js": "prettier --write \"**/*.{js,json,md,yml}\"",
+    "format:res": "find -E ./src -regex \".*\\.resi?\" -print0 | xargs -0 -I '{}' bsc -format '{}'",
+    "start": "snowpack dev",
+    "test": "web-test-runner \"src/**/__tests__/*.bs.js\"",
+    "test:coverage": "npm test -- --coverage"
+  },
+  "devDependencies": {
+    "bs-platform": "^9.0.1",
+    "@rescript/react": "^0.10.1"
+  }
+}

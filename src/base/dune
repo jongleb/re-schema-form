@@ -1,4 +1,0 @@
-(library
-  (name schema_render_base)
-  (public_name schema_render.base)
-)

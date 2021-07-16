@@ -4,7 +4,6 @@ open Ast_mapper
 open Asttypes
 open Parsetree
 open Ast_helper
-open Schema_render_base
 
 let gadtFieldName = "field"
 

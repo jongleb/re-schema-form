@@ -1,5 +1,5 @@
 (executable
   (name bin)
-  (public_name schema_render)
-  (libraries schema_render)
+  (public_name re_schema_form)
+  (libraries re_schema_form)
 )

@@ -1,13 +1,10 @@
 {
-  "name": "reason-react-realworld-example-app",
+  "name": "re-schema-form",
   "reason": {
     "react-jsx": 3
   },
   "sources": [
-    {
-      "dir" : "src",
-      "subdirs" : true
-    }
+    "src/rescript"
   ],
   "bsc-flags": ["-bs-super-errors", "-bs-no-version-header"],
   "package-specs": [
@@ -17,22 +14,13 @@
     }
   ],
   "suffix": ".bs.js",
-  "namespace": true,
   "bs-dependencies": [
-    "bs-bastet",
-    "bs-decode",
-    "bs-fetch",
-    "@rescript/react",
-    "bs-webapi",
-    "relude"
+    "@rescript/react"
   ],
   "bs-dev-dependencies": [
   ],
   "refmt": 3,
   "warnings": {
     "number": "-48"
-  },
-  "ppx-flags": [
-    "../_esy/default/build/default/src/bin/bin.exe"
-  ]
+  }
 }
