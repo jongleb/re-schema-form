@@ -1,6 +1,6 @@
 (library
-  (name re_schema_form)
-  (public_name re_schema_form)
+  (name ppx)
+  (public_name re-schema-form)
   (kind ppx_rewriter)
   (libraries ppxlib ocaml-migrate-parsetree)
   (preprocess (pps ppx_tools_versioned.metaquot_410))

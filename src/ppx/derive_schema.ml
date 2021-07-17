@@ -692,4 +692,4 @@ let schema_mapper = {
 
 let test_mapper _ _ = schema_mapper
 
-let () = Driver.register ~name:"lenses-ppx" (module OCaml_410) test_mapper
+let () = Driver.register ~name:"re_schema_form" (module OCaml_410) test_mapper

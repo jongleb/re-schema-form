@@ -1,0 +1,118 @@
+name: npm-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Optional tag name"
+        required: false
+
+jobs:
+  build_linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node_version: [14]
+
+    container:
+      image: cichocinski/docker-esy:alpine3.8
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - run: esy install
+        working-directory: packages/ppx
+
+      - run: esy release-static
+        working-directory: packages/ppx
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: packages/ppx/_build/default/bin/bin.exe
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node_version: [14]
+        os: [macOS-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node_version }}
+          
+      - run: npm i -g esy
+      - run: esy install
+        working-directory: .
+
+      - run: esy build
+        working-directory: .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: ./_build/default/bin/bin.exe
+
+  release:
+    needs: [build, build_linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: macOS-latest
+          path: packages/darwin
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: ubuntu-latest
+          path: packages/linux
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: windows-latest
+          path: packages/windows
+
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+          registry-url: https://registry.npmjs.org/
+      
+      - run: mkdir -p $GITHUB_WORKSPACE/tarball
+      - run: |
+          cd packages/ppx
+          npm version patch
+      - run: |
+          cd packages/ppx
+          cp package.json $GITHUB_WORKSPACE/tarball
+          cp postinstall.js $GITHUB_WORKSPACE/tarball
+      - run: |
+          cd packages
+          cp darwin/bin.exe $GITHUB_WORKSPACE/tarball/darwin
+          cp linux/bin.exe $GITHUB_WORKSPACE/tarball/linux
+          cp windows/bin.exe $GITHUB_WORKSPACE/tarball/win32
+      - run: |
+          cd $GITHUB_WORKSPACE/tarball
+          npm publish $(npm pack | tail -1) --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+      - run: |
+          git config --global user.email "github-actions@github.com" 
+          git config --global user.name "github-actions[bot]"
+          git commit --message "Update package.json" --all
+      - uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

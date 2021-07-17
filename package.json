@@ -1,27 +1,19 @@
 {
-  "name": "re_schema_form",
-  "esy": { 
-    "build": "dune build -p #{self.name}"
+  "name": "re-schema-form",
+  "version": "0.0.1",
+  "author": "Patcia Gleb <jongleb@yandex.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jongleb/re-schema-form.git"
   },
   "scripts": {
     "build": "esy build"
   },
   "dependencies": {
-    "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
-    "@opam/dune": ">=2.6",
-    "@opam/ocaml-lsp-server": "1.4.0",
-    "@opam/ocaml-migrate-parsetree": "1.7.3",
-    "@opam/ppx_tools_versioned": "5.4.0",
-    "@opam/ppxlib": "*",
-    "@reason-native/console": "*",
-    "@reason-native/pastel": "*",
-    "lenses-ppx": "^6.1.10",
-    "ocaml": "4.10.0"
   },
   "devDependencies": {
-    "@opam/merlin": "*",
-    "@reason-native/rely": "*",
-    "refmterr": "*",
-    "@opam/odoc": "*"
+    "@rescript/react": "0.10.1",
+    "bs-platform": "9.0.0"
   }
 }

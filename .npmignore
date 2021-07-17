@@ -1,13 +1,15 @@
 /_build
 /_esy
+/_release
 /.vscode
 /node_modules
 /ppx
 /.ci
-/src
 /tests
 /esy.lock
 /lib
 /binaries
 esy.json
 dune-project
+re-schema-form.install
+README.md

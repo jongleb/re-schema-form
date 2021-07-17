@@ -1,32 +1,7 @@
 {
-  "checksum": "d331a2e6c6fbc1abdc8b6c574a0562a0",
-  "root": "re_schema_form@link-dev:./package.json",
+  "checksum": "5140260ef7972fa15742da173a3fa8e2",
+  "root": "re-schema-form@link-dev:./esy.json",
   "node": {
-    "re_schema_form@link-dev:./package.json": {
-      "id": "re_schema_form@link-dev:./package.json",
-      "name": "re_schema_form",
-      "version": "link-dev:./package.json",
-      "source": {
-        "type": "link-dev",
-        "path": ".",
-        "manifest": "package.json"
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.10.0@d41d8cd9", "lenses-ppx@6.1.10@d41d8cd9",
-        "@reason-native/pastel@0.3.0@d41d8cd9",
-        "@reason-native/console@0.1.0@d41d8cd9",
-        "@opam/ppxlib@opam:0.15.0@071fae58",
-        "@opam/ppx_tools_versioned@opam:5.4.0@32d1a414",
-        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
-        "@opam/ocaml-lsp-server@opam:1.4.0@c9583433",
-        "@opam/dune@opam:2.8.4@ee414d6c", "@esy-ocaml/reason@3.7.0@d41d8cd9"
-      ],
-      "devDependencies": [
-        "refmterr@3.3.2@d41d8cd9", "@reason-native/rely@3.2.1@d41d8cd9",
-        "@opam/odoc@opam:1.5.2@94f47c8b", "@opam/merlin@opam:3.4.2@9a4d1fd4"
-      ]
-    },
     "refmterr@3.3.2@d41d8cd9": {
       "id": "refmterr@3.3.2@d41d8cd9",
       "name": "refmterr",
@@ -47,6 +22,26 @@
       ],
       "devDependencies": []
     },
+    "re-schema-form@link-dev:./esy.json": {
+      "id": "re-schema-form@link-dev:./esy.json",
+      "name": "re-schema-form",
+      "version": "link-dev:./esy.json",
+      "source": { "type": "link-dev", "path": ".", "manifest": "esy.json" },
+      "overrides": [],
+      "dependencies": [
+        "ocaml@4.10.0@d41d8cd9", "@reason-native/pastel@0.3.0@d41d8cd9",
+        "@reason-native/console@0.1.0@d41d8cd9",
+        "@opam/ppxlib@opam:0.15.0@071fae58",
+        "@opam/ppx_tools_versioned@opam:5.4.0@32d1a414",
+        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
+        "@opam/ocaml-lsp-server@opam:1.4.0@c9583433",
+        "@opam/dune@opam:2.8.4@ee414d6c", "@esy-ocaml/reason@3.7.0@d41d8cd9"
+      ],
+      "devDependencies": [
+        "refmterr@3.3.2@d41d8cd9", "@reason-native/rely@3.2.1@d41d8cd9",
+        "@opam/odoc@opam:1.5.2@94f47c8b", "@opam/merlin@opam:3.4.2@9a4d1fd4"
+      ]
+    },
     "ocaml@4.10.0@d41d8cd9": {
       "id": "ocaml@4.10.0@d41d8cd9",
       "name": "ocaml",
@@ -55,20 +50,6 @@
         "type": "install",
         "source": [
           "archive:https://registry.npmjs.org/ocaml/-/ocaml-4.10.0.tgz#sha1:3797ee252dca8dec38d3cdd42162923f56dba433"
-        ]
-      },
-      "overrides": [],
-      "dependencies": [],
-      "devDependencies": []
-    },
-    "lenses-ppx@6.1.10@d41d8cd9": {
-      "id": "lenses-ppx@6.1.10@d41d8cd9",
-      "name": "lenses-ppx",
-      "version": "6.1.10",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://registry.npmjs.org/lenses-ppx/-/lenses-ppx-6.1.10.tgz#sha1:74b84a7c08191ff39c7f7e57d82c2b1d8a616a74"
         ]
       },
       "overrides": [],
