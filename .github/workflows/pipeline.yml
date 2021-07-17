@@ -94,6 +94,12 @@ jobs:
       - run: |
           npm version patch
       - run: |
+          cp package.json $GITHUB_WORKSPACE/tarball
+          cp postinstall.js $GITHUB_WORKSPACE/tarball
+          cp bsconfig.json $GITHUB_WORKSPACE/tarball
+          cp -r src/rescript $GITHUB_WORKSPACE/tarball/src/rescript
+      - run: |
+          cd packages
           cp darwin/bin.exe $GITHUB_WORKSPACE/tarball/darwin
           cp linux/bin.exe $GITHUB_WORKSPACE/tarball/linux
           cp windows/bin.exe $GITHUB_WORKSPACE/tarball/win32
@@ -101,12 +107,12 @@ jobs:
           cd $GITHUB_WORKSPACE/tarball
           npm publish $(npm pack | tail -1) --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-      - run: |
-          git config --global user.email "github-actions@github.com" 
-          git config --global user.name "github-actions[bot]"
-          git commit --message "Update package.json" --all
-      - uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      # - run: |
+      #     git config --global user.email "github-actions@github.com" 
+      #     git config --global user.name "github-actions[bot]"
+      #     git commit --message "Update package.json" --all
+      # - uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ github.ref }}
