@@ -33,7 +33,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ./_build/default/bin/bin.exe
+          path: ./_build/default/src/bin/bin.exe
 
   build:
     runs-on: ${{ matrix.os }}
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ./_build/default/bin/bin.exe
+          path: ./_build/default/src/bin/bin.exe
 
   release:
     needs: [build, build_linux]
