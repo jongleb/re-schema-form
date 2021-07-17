@@ -92,8 +92,6 @@ jobs:
       
       - run: mkdir -p $GITHUB_WORKSPACE/tarball
       - run: |
-          npm version patch
-      - run: |
           cp package.json $GITHUB_WORKSPACE/tarball
           cp postinstall.js $GITHUB_WORKSPACE/tarball
           cp bsconfig.json $GITHUB_WORKSPACE/tarball
