@@ -25,15 +25,15 @@ jobs:
           node-version: ${{ matrix.node_version }}
 
       - run: esy install
-        working-directory: packages/ppx
+        working-directory: .
 
       - run: esy release-static
-        working-directory: packages/ppx
+        working-directory: .
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: packages/ppx/_build/default/bin/bin.exe
+          path: ./_build/default/bin/bin.exe
 
   build:
     runs-on: ${{ matrix.os }}
@@ -92,14 +92,8 @@ jobs:
       
       - run: mkdir -p $GITHUB_WORKSPACE/tarball
       - run: |
-          cd packages/ppx
           npm version patch
       - run: |
-          cd packages/ppx
-          cp package.json $GITHUB_WORKSPACE/tarball
-          cp postinstall.js $GITHUB_WORKSPACE/tarball
-      - run: |
-          cd packages
           cp darwin/bin.exe $GITHUB_WORKSPACE/tarball/darwin
           cp linux/bin.exe $GITHUB_WORKSPACE/tarball/linux
           cp windows/bin.exe $GITHUB_WORKSPACE/tarball/win32
