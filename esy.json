@@ -8,23 +8,23 @@
       "buildsInSource": "_build"
     },
     "scripts": {
-      "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static",
+      "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
     },
     "dependencies": {
-        "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
-        "@opam/dune": ">=2.6",
-        "@opam/ocaml-lsp-server": "1.4.0",
-        "@opam/ocaml-migrate-parsetree": "1.7.3",
-        "@opam/ppx_tools_versioned": "5.4.0",
-        "@opam/ppxlib": "*",
-        "@reason-native/console": "*",
-        "@reason-native/pastel": "*",
-        "ocaml": "4.10.0"
-      },
-      "devDependencies": {
-        "@opam/merlin": "*",
-        "@reason-native/rely": "*",
-        "refmterr": "*",
-        "@opam/odoc": "*"
-      }
+      "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
+      "@opam/dune": ">=2.6",
+      "@opam/ocaml-lsp-server": "1.4.0",
+      "@opam/ocaml-migrate-parsetree": "1.7.3",
+      "@opam/ppx_tools_versioned": "5.4.0",
+      "@opam/ppxlib": "*",
+      "@reason-native/console": "*",
+      "@reason-native/pastel": "*",
+      "ocaml": "4.10.0"
+    },
+    "devDependencies": {
+      "@opam/merlin": "*",
+      "@reason-native/rely": "*",
+      "refmterr": "*",
+      "@opam/odoc": "*"
+    }
   }
