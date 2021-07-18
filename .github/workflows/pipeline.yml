@@ -95,6 +95,7 @@ jobs:
           cp package.json $GITHUB_WORKSPACE/tarball
           cp postinstall.js $GITHUB_WORKSPACE/tarball
           cp bsconfig.json $GITHUB_WORKSPACE/tarball
+          mkdir $GITHUB_WORKSPACE/tarball/src
           cp -r src/rescript $GITHUB_WORKSPACE/tarball/src/rescript
       - run: |
           cd packages
