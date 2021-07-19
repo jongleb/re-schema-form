@@ -328,81 +328,108 @@ let schema_render:
 
         let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((w, _)) => w == FieldWrap)
 
-        let (
-          _,
-          module(FieldWrapResolved: FieldWrapRender with type t = b),
-        ) = Belt_Option.getWithDefault(
-          option_field_wrapper,
-          (FieldWrap, module(DefaultFieldWrapRender: FieldWrapRender with type t = b)),
-        )
+        module WrappedField = {
+            @react.component
+            let make = (~meta: b, ~resolve: common_field_wrap, ~children: React.element) => {
+              let (
+                _,
+                module(FieldWrapResolved: FieldWrapRender with type t = b),
+              ) = Belt_Option.getWithDefault(
+                option_field_wrapper,
+                (resolve, module(DefaultFieldWrapRender: FieldWrapRender with type t = b)),
+              )
+              <FieldWrapResolved meta>
+                {children}
+              </FieldWrapResolved>
+            }
+        }
 
         let handle_item = i =>
           switch i {
-          | Schema.Mk_field(Schema_string(s), meta) => <FieldWrapResolved meta>
+          | Schema.Mk_field(Schema_string(s), meta) => <WrappedField resolve=FieldWrap meta>
               {createSchemaField(
                 ~schemaField=s,
                 ~defaultRender=module(TextInputDefaultRender),
-                ~renderField=TextRender,
+                ~renderField=TextRender
               )}
-            </FieldWrapResolved>
-          | Schema.Mk_nullable_field(Schema_string(s), meta) => 
-            <FieldWrapResolved meta>
+            </WrappedField>
+          | Schema.Mk_nullable_field(Schema_string(s), meta) => <WrappedField resolve=NullableFieldWrap meta>
                 {createSchemaField(
                   ~schemaField=s,
                   ~defaultRender=module(OptionTextInputDefaultRender),
-                  ~renderField=OptionTextRender,
+                  ~renderField=OptionTextRender
               )}
-              </FieldWrapResolved>
-          | Schema.Mk_array_field(Schema_string(s), _) => createSchemaField(
-              ~schemaField=s,
-              ~defaultRender=module(ArrayTextInputDefaultRender),
-              ~renderField=ArrayTextRender,
-            )
-          | Schema.Mk_field(Schema_number(n, Schema_number_int), _) => createSchemaField(
+            </WrappedField>
+          | Schema.Mk_array_field(Schema_string(s), meta) => <WrappedField resolve=ArrayFieldWrap meta>
+              {createSchemaField(
+                ~schemaField = s,
+                ~defaultRender=module(ArrayTextInputDefaultRender),
+                ~renderField=ArrayTextRender,
+              )}
+            </WrappedField>
+          | Schema.Mk_field(Schema_number(n, Schema_number_int), meta) => <WrappedField resolve=FieldWrap meta>
+              {createSchemaField(
               ~schemaField=n,
               ~defaultRender=module(NumberIntInputDefaultRender),
               ~renderField=NumberRender(NumberIntRender),
-            )
-          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_int), _) => createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(OptionNumberIntInputDefaultRender),
-              ~renderField=OptionNumberRender(NumberIntRender),
-            )
-          | Schema.Mk_array_field(Schema_number(n, Schema_number_int), _) => createSchemaField(
+            )}
+            </WrappedField>
+          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_int), meta) => <WrappedField resolve=NullableFieldWrap meta>
+              {createSchemaField(
+                ~schemaField=n,
+                ~defaultRender=module(OptionNumberIntInputDefaultRender),
+                ~renderField=OptionNumberRender(NumberIntRender),
+              )}
+          </WrappedField>  
+          | Schema.Mk_array_field(Schema_number(n, Schema_number_int), meta) => <WrappedField resolve=ArrayFieldWrap meta>
+            {createSchemaField(
               ~schemaField=n,
               ~defaultRender=module(ArrayNumberIntInputDefaultRender),
               ~renderField=ArrayNumberRender(NumberIntRender),
-            )
-          | Schema.Mk_field(Schema_number(n, Schema_number_float), _) => createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(NumberFloatInputDefaultRender),
-              ~renderField=NumberRender(NumberFloatRender),
-            )
-          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_float), _) => createSchemaField(
+            )}
+           </WrappedField>
+          | Schema.Mk_field(Schema_number(n, Schema_number_float), meta) => <WrappedField resolve=FieldWrap meta>
+              {createSchemaField(
+                ~schemaField=n,
+                ~defaultRender=module(NumberFloatInputDefaultRender),
+                ~renderField=NumberRender(NumberFloatRender),
+              )}
+            </WrappedField>
+          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_float), meta) => <WrappedField resolve=NullableFieldWrap meta>
+              {createSchemaField(
               ~schemaField=n,
               ~defaultRender=module(OptionNumberFloatInputDefaultRender),
               ~renderField=OptionNumberRender(NumberFloatRender),
-            )
-          | Schema.Mk_array_field(Schema_number(n, Schema_number_float), _) => createSchemaField(
+              )}
+            </WrappedField>
+          | Schema.Mk_array_field(Schema_number(n, Schema_number_float), meta) => <WrappedField resolve=ArrayFieldWrap meta>
+              {createSchemaField(
               ~schemaField=n,
               ~defaultRender=module(ArrayNumberFloatInputDefaultRender),
               ~renderField=ArrayNumberRender(NumberFloatRender),
-            )
-          | Schema.Mk_field(Schema_boolean(b), _) => createSchemaField(
+            )}
+            </WrappedField>
+          | Schema.Mk_field(Schema_boolean(b), meta) => <WrappedField resolve=FieldWrap meta>
+              {createSchemaField(
               ~schemaField=b,
               ~defaultRender=module(BoolInputDefaultRender),
               ~renderField=BoolRender,
-            )
-          | Schema.Mk_nullable_field(Schema_boolean(b), _) => createSchemaField(
-              ~schemaField=b,
-              ~defaultRender=module(OptionBoolInputDefaultRender),
-              ~renderField=OptionBoolRender,
-            )
-          | Schema.Mk_array_field(Schema_boolean(b), _) => createSchemaField(
+              )}
+             </WrappedField>
+          | Schema.Mk_nullable_field(Schema_boolean(b), meta) => <WrappedField resolve=NullableFieldWrap meta>
+              {createSchemaField(
+                ~schemaField=b,
+                ~defaultRender=module(OptionBoolInputDefaultRender),
+                ~renderField=OptionBoolRender,
+              )}
+            </WrappedField>
+          | Schema.Mk_array_field(Schema_boolean(b), meta) => <WrappedField resolve=ArrayFieldWrap meta>
+            {createSchemaField(
               ~schemaField=b,
               ~defaultRender=module(ArrayBoolInputDefaultRender),
               ~renderField=ArrayBoolRender,
-            )
+            )}
+          </WrappedField>
           | Schema.Mk_nullable_field(Schema_object(_), _) => React.null
           | Schema.Mk_array_field(Schema_object(_), _) => React.null
           | Schema.Mk_field(Schema_object(o), _) => <div
