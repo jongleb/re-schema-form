@@ -17,6 +17,8 @@ module StateSchema = %schema(
 );
 ``` 
 
+Also take a look at this https://github.com/Astrocoders/lenses-ppx project for a better understanding of how ppx works. In addition, the generation of lenses is borrowed (stolen) from there
+
 
 ### Installation
 
