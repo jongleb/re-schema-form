@@ -23,7 +23,7 @@ Add to you bsconfig
 
 Okay, start
 
-```
+```rescript
 open SchemaRender
 
 
