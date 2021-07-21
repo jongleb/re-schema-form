@@ -1,11 +1,8 @@
 # Re-schema-form
 ## Rescript form render
 
-Re-schema-form is a meta based render.
+Re-schema-form is a meta based render.  This can be especially useful for generating large forms with predefined templates. That is, we want to generate a form based on some kind of scheme. But at the same time, we do not want to describe the circuit separately and separately have the type. **ppx** is in my opinion the best solution for this
 
-## Features
-
-- you will see
 
 ### Installation
 
