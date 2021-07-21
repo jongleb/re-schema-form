@@ -1,7 +1,21 @@
 # Re-schema-form
 ## Rescript form render
-
 Re-schema-form is a meta based render.  This can be especially useful for generating large forms with predefined templates. That is, we want to generate a form based on some kind of scheme. But at the same time, we do not want to describe the circuit separately and separately have the type. **ppx** is in my opinion the best solution for this
+
+### Features
+ 
+ First of all!  This idea is not new. https://github.com/rjsf-team/react-jsonschema-form
+ But the main difference is that in rjsf we must define the FormData type and also describe the schema itself. **BUT** in react-schema-form we should define only our type (form data type)
+ 
+```rescript
+module StateSchema = %schema(
+    type schema_meta = {name: string}
+    type app = {
+      first_field: string,
+      second_field: int
+    }
+  );
+``` 
 
 
 ### Installation
