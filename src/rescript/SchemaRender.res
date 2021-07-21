@@ -20,7 +20,10 @@ module rec Schema_object: {
     | Schema_number('field, schema_number<'t>): schema<'t, 'field, 'm>
     | Schema_boolean('field): schema<bool, 'field, 'm>
     | Schema_object(
-        ('field, module(Schema_object.Schema_config with type t = 't and type m = 'm)),
+        (
+          'field,
+          module(Schema_object.Schema_config with type t = 't and type m = 'm),
+        ),
       ): schema<'t, 'field, 'm>
 
   module type Object = {
@@ -42,9 +45,13 @@ module rec Schema_object: {
     include Object
 
     type rec field_render =
-      Mk_field_render((field<'a>, module(FieldRender with type t = 'a))): field_render
+      | Mk_field_render(
+          (field<'a>, module(FieldRender with type t = 'a)),
+        ): field_render
 
-    let get_field_render: field<'a> => option<module(FieldRender with type t = 'a)>
+    let get_field_render: field<'a> => option<
+      module(FieldRender with type t = 'a),
+    >
   }
 } = Schema_object
 
@@ -63,7 +70,8 @@ module ArrayTextInputDefaultRender = {
   type t = array<string>
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) => value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
+    let onChange = (i, v) =>
+      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
     let mapped = Array.mapi((i, ii) => {
       let onChange = e => {
         let val = ReactEvent.Form.target(e)["value"]
@@ -79,7 +87,8 @@ module ArrayNumberIntInputDefaultRender = {
   type t = array<int>
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) => value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
+    let onChange = (i, v) =>
+      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
     let mapped = Array.mapi((i, ii) => {
       let onChange = e => {
         let val = ReactEvent.Form.target(e)["valueAsNumber"]
@@ -95,7 +104,8 @@ module ArrayNumberFloatInputDefaultRender = {
   type t = array<float>
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) => value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
+    let onChange = (i, v) =>
+      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
     let mapped = Array.mapi((i, ii) => {
       let onChange = e => {
         let val = ReactEvent.Form.target(e)["valueAsNumber"]
@@ -111,7 +121,8 @@ module ArrayBoolInputDefaultRender = {
   type t = array<bool>
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) => value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
+    let onChange = (i, v) =>
+      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
     let mapped = Array.mapi((i, ii) => {
       let onChange = e => {
         let val = ReactEvent.Form.target(e)["checked"]
@@ -128,7 +139,9 @@ module OptionTextInputDefaultRender = {
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
     let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
-    <input type_="text" value={Belt.Option.getWithDefault(value, "")} onChange />
+    <input
+      type_="text" value={Belt.Option.getWithDefault(value, "")} onChange
+    />
   }
 }
 
@@ -190,7 +203,11 @@ module OptionBoolInputDefaultRender = {
   @react.component
   let make = (~value: t, ~onChange: t => unit) => {
     let onChange = e => ReactEvent.Form.target(e)["checked"] |> onChange
-    <input type_="checkbox" checked={Belt.Option.getWithDefault(value, false)} onChange />
+    <input
+      type_="checkbox"
+      checked={Belt.Option.getWithDefault(value, false)}
+      onChange
+    />
   }
 }
 
@@ -215,10 +232,16 @@ type common_field_wrap =
   | ArrayFieldWrap
   | ObjectFieldWrap
 
-type field_wrappers<'m> = array<(common_field_wrap, module(FieldWrapRender with type t = 'm))>
+type field_wrappers<'m> = array<(
+  common_field_wrap,
+  module(FieldWrapRender with type t = 'm),
+)>
 
 type rec render_field_wrap =
-  MkRenderFieldByType(render_field<'a>, module(FieldRender with type t = 'a)): render_field_wrap
+  | MkRenderFieldByType(
+      render_field<'a>,
+      module(FieldRender with type t = 'a),
+    ): render_field_wrap
 
 type renders = list<render_field_wrap>
 
@@ -233,27 +256,28 @@ let schema_render:
     module(Schema_config with type t = a and type m = b),
   ) => React.element =
   (~renders, ~field_wrappers, ~onChange, form_data, schema) => {
-    let module(DefaultFieldWrapRender: FieldWrapRender with type t = b) = module(
-      {
-        type t = b
-        @react.component
-        let make = (~meta, ~children: React.element) => <div> {children} </div>
-      }
-    )
     let rec iterate_schema_render:
       type a. (
         ~onChange: a => unit,
         a,
         module(Schema_config with type t = a and type m = b),
       ) => React.element =
-      (~onChange, form_data: a, module(Schema: Schema_config with type t = a and type m = b)) => {
+      (
+        ~onChange,
+        form_data: a,
+        module(Schema: Schema_config with type t = a and type m = b),
+      ) => {
         let handle_object_field:
           type f. (
-            (Schema.field<f>, module(Schema_config with type t = f and type m = b))
+            (
+              Schema.field<f>,
+              module(Schema_config with type t = f and type m = b),
+            )
           ) => React.element =
           ((field, m)) => {
             let next_data = Schema.get(form_data, field)
-            let next_on_change = upd => onChange(Schema.set(form_data, field, upd))
+            let next_on_change = upd =>
+              onChange(Schema.set(form_data, field, upd))
             iterate_schema_render(next_data, m, ~onChange=next_on_change)
           }
         let getSchemaRenderComponent:
@@ -270,16 +294,26 @@ let schema_render:
               switch l {
               | list{} => defaultRender
               | list{MkRenderFieldByType(t, c), ...xs} => {
-                  let result: option<module(FieldRender with type t = t)> = switch (
-                    t,
-                    renderField,
-                  ) {
+                  let result: option<
+                    module(FieldRender with type t = t),
+                  > = switch (t, renderField) {
                   | (TextRender, TextRender) => Some(c)
-                  | (NumberRender(NumberIntRender), NumberRender(NumberIntRender)) => Some(c)
-                  | (NumberRender(NumberFloatRender), NumberRender(NumberFloatRender)) => Some(c)
+                  | (
+                      NumberRender(NumberIntRender),
+                      NumberRender(NumberIntRender),
+                    ) =>
+                    Some(c)
+                  | (
+                      NumberRender(NumberFloatRender),
+                      NumberRender(NumberFloatRender),
+                    ) =>
+                    Some(c)
                   | (BoolRender, BoolRender) => Some(c)
                   | (OptionBoolRender, OptionBoolRender) => Some(c)
-                  | (OptionNumberRender(NumberIntRender), OptionNumberRender(NumberIntRender)) =>
+                  | (
+                      OptionNumberRender(NumberIntRender),
+                      OptionNumberRender(NumberIntRender),
+                    ) =>
                     Some(c)
                   | (
                       OptionNumberRender(NumberFloatRender),
@@ -305,145 +339,179 @@ let schema_render:
             ~onChange: t => unit,
             ~renderField: render_field<t>,
             ~schemaField: Schema.field<t>,
+            ~resolve: common_field_wrap,
+            ~meta: b,
           ) => React.element =
-          (~value, ~defaultRender, ~onChange, ~renderField, ~schemaField) => {
-            let module(Component: FieldRender with type t = t) = getSchemaRenderComponent(
+          (
+            ~value,
+            ~defaultRender,
+            ~onChange,
+            ~renderField,
+            ~schemaField,
+            ~resolve,
+            ~meta,
+          ) => {
+            let module(Component: FieldRender with
+              type t = t
+            ) = getSchemaRenderComponent(
               ~defaultRender,
               ~renderField,
               ~schemaField,
             )
-            <Component onChange value />
+            let children = <Component onChange value />
+            let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
+              w,
+              _,
+            )) => w == resolve)
+            switch option_field_wrapper {
+            | Some((
+                _,
+                module(FieldWrapResolved: FieldWrapRender with type t = b),
+              )) =>
+              <FieldWrapResolved meta> {children} </FieldWrapResolved>
+            | _ => children
+            }
           }
         let createSchemaField:
           type t. (
             ~schemaField: Schema.field<t>,
             ~defaultRender: module(FieldRender with type t = t),
             ~renderField: render_field<t>,
+            ~resolve: common_field_wrap,
+            ~meta: b,
           ) => React.element =
-          (~schemaField, ~defaultRender, ~renderField) => {
+          (~schemaField, ~defaultRender, ~renderField, ~resolve, ~meta) => {
             let value = Schema.get(form_data, schemaField)
-            let onChange = e => Schema.set(form_data, schemaField, e) |> onChange
-            getSchemaRender(~value, ~onChange, ~defaultRender, ~renderField, ~schemaField)
-          }
-
-        let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((w, _)) => w == FieldWrap)
-
-        module WrappedField = {
-          @react.component
-          let make = (~meta: b, ~resolve: common_field_wrap, ~children: React.element) => {
-            let (
-              _,
-              module(FieldWrapResolved: FieldWrapRender with type t = b),
-            ) = Belt_Option.getWithDefault(
-              option_field_wrapper,
-              (resolve, module(DefaultFieldWrapRender: FieldWrapRender with type t = b)),
+            let onChange = e =>
+              Schema.set(form_data, schemaField, e) |> onChange
+            getSchemaRender(
+              ~value,
+              ~onChange,
+              ~defaultRender,
+              ~renderField,
+              ~schemaField,
+              ~resolve,
+              ~meta,
             )
-            <FieldWrapResolved meta> {children} </FieldWrapResolved>
           }
-        }
 
         let handle_item = i =>
           switch i {
           | Schema.Mk_field(Schema_string(s), meta) =>
-            <WrappedField resolve=FieldWrap meta>
-              {createSchemaField(
-                ~schemaField=s,
-                ~defaultRender=module(TextInputDefaultRender),
-                ~renderField=TextRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=s,
+              ~defaultRender=module(TextInputDefaultRender),
+              ~renderField=TextRender,
+              ~resolve=FieldWrap,
+              ~meta,
+            )
           | Schema.Mk_nullable_field(Schema_string(s), meta) =>
-            <WrappedField resolve=NullableFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=s,
-                ~defaultRender=module(OptionTextInputDefaultRender),
-                ~renderField=OptionTextRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=s,
+              ~defaultRender=module(OptionTextInputDefaultRender),
+              ~renderField=OptionTextRender,
+              ~resolve=NullableFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_array_field(Schema_string(s), meta) =>
-            <WrappedField resolve=ArrayFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=s,
-                ~defaultRender=module(ArrayTextInputDefaultRender),
-                ~renderField=ArrayTextRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=s,
+              ~defaultRender=module(ArrayTextInputDefaultRender),
+              ~renderField=ArrayTextRender,
+              ~resolve=ArrayFieldWrap,
+              ~meta,
+            )
+
           | Schema.Mk_field(Schema_number(n, Schema_number_int), meta) =>
-            <WrappedField resolve=FieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(NumberIntInputDefaultRender),
-                ~renderField=NumberRender(NumberIntRender),
-              )}
-            </WrappedField>
-          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_int), meta) =>
-            <WrappedField resolve=NullableFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(OptionNumberIntInputDefaultRender),
-                ~renderField=OptionNumberRender(NumberIntRender),
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(NumberIntInputDefaultRender),
+              ~renderField=NumberRender(NumberIntRender),
+              ~resolve=FieldWrap,
+              ~meta,
+            )
+          | Schema.Mk_nullable_field(
+              Schema_number(n, Schema_number_int),
+              meta,
+            ) =>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(OptionNumberIntInputDefaultRender),
+              ~renderField=OptionNumberRender(NumberIntRender),
+              ~resolve=NullableFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_array_field(Schema_number(n, Schema_number_int), meta) =>
-            <WrappedField resolve=ArrayFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(ArrayNumberIntInputDefaultRender),
-                ~renderField=ArrayNumberRender(NumberIntRender),
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(ArrayNumberIntInputDefaultRender),
+              ~renderField=ArrayNumberRender(NumberIntRender),
+              ~resolve=ArrayFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_field(Schema_number(n, Schema_number_float), meta) =>
-            <WrappedField resolve=FieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(NumberFloatInputDefaultRender),
-                ~renderField=NumberRender(NumberFloatRender),
-              )}
-            </WrappedField>
-          | Schema.Mk_nullable_field(Schema_number(n, Schema_number_float), meta) =>
-            <WrappedField resolve=NullableFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(OptionNumberFloatInputDefaultRender),
-                ~renderField=OptionNumberRender(NumberFloatRender),
-              )}
-            </WrappedField>
-          | Schema.Mk_array_field(Schema_number(n, Schema_number_float), meta) =>
-            <WrappedField resolve=ArrayFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=n,
-                ~defaultRender=module(ArrayNumberFloatInputDefaultRender),
-                ~renderField=ArrayNumberRender(NumberFloatRender),
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(NumberFloatInputDefaultRender),
+              ~renderField=NumberRender(NumberFloatRender),
+              ~resolve=FieldWrap,
+              ~meta,
+            )
+          | Schema.Mk_nullable_field(
+              Schema_number(n, Schema_number_float),
+              meta,
+            ) =>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(OptionNumberFloatInputDefaultRender),
+              ~renderField=OptionNumberRender(NumberFloatRender),
+              ~resolve=NullableFieldWrap,
+              ~meta,
+            )
+          | Schema.Mk_array_field(
+              Schema_number(n, Schema_number_float),
+              meta,
+            ) =>
+            createSchemaField(
+              ~schemaField=n,
+              ~defaultRender=module(ArrayNumberFloatInputDefaultRender),
+              ~renderField=ArrayNumberRender(NumberFloatRender),
+              ~resolve=ArrayFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_field(Schema_boolean(b), meta) =>
-            <WrappedField resolve=FieldWrap meta>
-              {createSchemaField(
-                ~schemaField=b,
-                ~defaultRender=module(BoolInputDefaultRender),
-                ~renderField=BoolRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=b,
+              ~defaultRender=module(BoolInputDefaultRender),
+              ~renderField=BoolRender,
+              ~resolve=FieldWrap,
+              ~meta,
+            )
           | Schema.Mk_nullable_field(Schema_boolean(b), meta) =>
-            <WrappedField resolve=NullableFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=b,
-                ~defaultRender=module(OptionBoolInputDefaultRender),
-                ~renderField=OptionBoolRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=b,
+              ~defaultRender=module(OptionBoolInputDefaultRender),
+              ~renderField=OptionBoolRender,
+              ~resolve=NullableFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_array_field(Schema_boolean(b), meta) =>
-            <WrappedField resolve=ArrayFieldWrap meta>
-              {createSchemaField(
-                ~schemaField=b,
-                ~defaultRender=module(ArrayBoolInputDefaultRender),
-                ~renderField=ArrayBoolRender,
-              )}
-            </WrappedField>
+            createSchemaField(
+              ~schemaField=b,
+              ~defaultRender=module(ArrayBoolInputDefaultRender),
+              ~renderField=ArrayBoolRender,
+              ~resolve=ArrayFieldWrap,
+              ~meta,
+            )
           | Schema.Mk_nullable_field(Schema_object(_), _) => React.null
           | Schema.Mk_array_field(Schema_object(_), _) => React.null
           | Schema.Mk_field(Schema_object(o), _) =>
-            <div style={ReactDOM.Style.make(~marginTop="20px", ~marginLeft="40px", ())}>
+            <div
+              style={ReactDOM.Style.make(
+                ~marginTop="20px",
+                ~marginLeft="40px",
+                (),
+              )}>
               {handle_object_field(o)}
             </div>
           }
@@ -462,4 +530,7 @@ let make = (
   ~onChange: 'a => unit,
   ~renders: renders,
   ~field_wrappers: field_wrappers<'b>,
-) => <div> {schema_render(form_data, schema, ~renders, ~onChange, ~field_wrappers)} </div>
+) =>
+  <div>
+    {schema_render(form_data, schema, ~renders, ~onChange, ~field_wrappers)}
+  </div>
