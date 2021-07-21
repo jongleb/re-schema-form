@@ -9,12 +9,12 @@ Re-schema-form is a meta based render.  This can be especially useful for genera
  
 ```rescript
 module StateSchema = %schema(
-    type schema_meta = {name: string}
-    type app = {
-      first_field: string,
-      second_field: int
-    }
-  );
+  type schema_meta = {name: string}
+  type app = {
+    first_field: string,
+    second_field: int
+  }
+);
 ``` 
 
 
