@@ -34,6 +34,7 @@ let createType name = {
   ])
 }
 
+(* Taken from https://github.com/Astrocoders/lenses-ppx/blob/master/packages/ppx/src/LensesPpx.re  *)
 let create_get_lens name fields = 
   let cases = List.map (fun field -> 
     let constr = Ast_helper.Pat.construct 
@@ -79,6 +80,8 @@ let create_get_lens name fields =
     Ast_helper.Exp.constraint_ body typeDefinitionFilledWithPolyLocalType in
   [%stri let [%p pat] = fun (type value) -> [%e body]]
 
+
+(* Taken from https://github.com/Astrocoders/lenses-ppx/blob/master/packages/ppx/src/LensesPpx.re  *)
 let create_set_lens name fields = 
   let cases = List.map (fun field -> 
     let constr = Ast_helper.Pat.construct 
