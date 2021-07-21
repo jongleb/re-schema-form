@@ -65,7 +65,7 @@ module App = {
 
 Then, of course, we want to dress up our field.
 We can do this by type
-```
+```rescript
 module TextInputRender = {
   type t = string
   @react.component
@@ -94,7 +94,7 @@ let renders = Belt_List.fromArray([
 
 And update
 
-```
+```rescript
 <SchemaRender
       field_wrappers=[]
       renders
@@ -107,7 +107,7 @@ And update
 
 We have renders for all occasions
 
-```
+```rescript
 type rec render_field<'t> =
   | NumberRender(render_number_field<'t>): render_field<'t>
   | TextRender: render_field<string>
@@ -122,7 +122,7 @@ type rec render_field<'t> =
 
 And next we want to dress up concrete field
 
-```
+```rescript
 module FirstFieldInputRender = {
   type t = string
   @react.component
@@ -149,7 +149,7 @@ And usually in forms we want to always have a wrapper over the field
 
 Chose you field type
 
-```
+```rescript
 type common_field_wrap =
   | FieldWrap
   | NullableFieldWrap
@@ -159,7 +159,7 @@ type common_field_wrap =
 
 And we also need to produce meta data, like name , label, etc
 
-```
+```rescript
 module FieldWrapRender = {
   type t = option<StateSchema.schema_meta>
   @react.component
@@ -175,7 +175,7 @@ module FieldWrapRender = {
 ```
 
 And
-```
+```rescript
 <SchemaRender
       field_wrappers=[(FieldWrap, module(FieldWrapRender))]
       renders
@@ -189,7 +189,7 @@ And
 
 Ooo, we forgot to update something
 
-```
+```rescript
 module StateSchema = %schema(
  type schema_meta = {name: string}
  type app = {
@@ -206,7 +206,7 @@ Yeeep
 
 Now we want to add for example nullable field
 
-```
+```rescript
 module StateSchema = %schema(
  type schema_meta = {name: string}
  type app = {
@@ -230,7 +230,7 @@ let form_data = {
 
 Hmm, it looks very boring, let's define a field wrapper for ALL nullable
 
-```
+```rescript
 <SchemaRender
       field_wrappers=[
         (FieldWrap, module(FieldWrapRender)),
