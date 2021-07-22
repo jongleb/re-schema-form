@@ -332,6 +332,28 @@ let schema_render:
               }
             loop(renders)
           }
+
+        let getFieldRender:
+          type t. (
+            ~resolve: common_field_wrap,
+            ~meta: b,
+            ~children: React.element,
+          ) => React.element =
+          (~resolve, ~meta, ~children) => {
+            let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
+              w,
+              _,
+            )) => w == resolve)
+            switch option_field_wrapper {
+            | Some((
+                _,
+                module(FieldWrapResolved: FieldWrapRender with type t = b),
+              )) =>
+              <FieldWrapResolved meta> {children} </FieldWrapResolved>
+            | _ => children
+            }
+          }
+
         let getSchemaRender:
           type t. (
             ~value: t,
@@ -359,18 +381,7 @@ let schema_render:
               ~schemaField,
             )
             let children = <Component onChange value />
-            let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
-              w,
-              _,
-            )) => w == resolve)
-            switch option_field_wrapper {
-            | Some((
-                _,
-                module(FieldWrapResolved: FieldWrapRender with type t = b),
-              )) =>
-              <FieldWrapResolved meta> {children} </FieldWrapResolved>
-            | _ => children
-            }
+            getFieldRender(~resolve, ~meta, ~children)
           }
         let createSchemaField:
           type t. (
@@ -505,15 +516,10 @@ let schema_render:
             )
           | Schema.Mk_nullable_field(Schema_object(_), _) => React.null
           | Schema.Mk_array_field(Schema_object(_), _) => React.null
-          | Schema.Mk_field(Schema_object(o), _) =>
-            <div
-              style={ReactDOM.Style.make(
-                ~marginTop="20px",
-                ~marginLeft="40px",
-                (),
-              )}>
-              {handle_object_field(o)}
-            </div>
+          | Schema.Mk_field(Schema_object(o), meta) => {
+              let children = handle_object_field(o)
+              getFieldRender(~resolve=ObjectFieldWrap, ~meta, ~children)
+            }
           }
         let items = Belt.Array.mapWithIndex(Schema.schema, (i, ii) => {
           <div key={Belt.Int.toString(i)}> {handle_item(ii)} </div>
