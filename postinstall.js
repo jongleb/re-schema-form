@@ -2,7 +2,7 @@ const fs = require("fs");
 
 const { platform } = process;
 if (!fs.existsSync(platform)) {
-  throw new Error(platform + " lenses-ppx binary not found");
+  throw new Error(platform + " binary not found");
 }
 
 /**
