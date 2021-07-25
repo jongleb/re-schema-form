@@ -1,0 +1,27 @@
+{
+  "name": "reason-react-realworld-example-app",
+  "namespace": true,
+  "refmt": 3,
+  "suffix": ".bs.js",
+  "reason": { "react-jsx": 3 },
+  "bsc-flags": [
+    "-bs-super-errors",
+    "-bs-no-version-header"
+  ],
+  "ppx-flags": ["../_build/default/src/bin/bin.exe"],
+  "sources": ["src"],
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": true
+    }
+  ],
+  "bs-dependencies": [
+    "@rescript/react",
+    "@ryyppy/rescript-promise",
+    "bs-fetch",
+    "bs-webapi",
+    "re-schema-form"
+  ],
+  "bs-dev-dependencies": []
+}

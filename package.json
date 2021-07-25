@@ -7,7 +7,9 @@
     "type": "git",
     "url": "https://github.com/jongleb/re-schema-form.git"
   },
-  "keywords": ["rescript"],
+  "keywords": [
+    "rescript"
+  ],
   "description": "rescript. Re-schema-form is a meta based render. ",
   "scripts": {
     "build": "esy build",
