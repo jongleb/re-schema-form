@@ -12,7 +12,7 @@
     "react"
   ],
   "scripts": {
-    "build": "sudo vite build",
+    "build": "chmod +x node_modules/re-schema-form/darwin vite build",
     "clean": "rescript clean -with-deps",
     "format": "npm run format:js && npm run format:res",
     "format:js": "prettier --write \"**/*.{js,json,md,yml}\"",
