@@ -12,7 +12,7 @@
     "react"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "sudo vite build",
     "clean": "rescript clean -with-deps",
     "format": "npm run format:js && npm run format:res",
     "format:js": "prettier --write \"**/*.{js,json,md,yml}\"",
