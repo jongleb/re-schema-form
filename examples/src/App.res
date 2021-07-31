@@ -1,6 +1,3 @@
-open SchemaRender
-
-
 module StateSchema = %schema(
  type schema_meta = {name: string}
  type app = {
@@ -16,7 +13,7 @@ let form_data = {
  second_field: 123,
 }
 
- @react.component
+@react.component
   let make = () => {
     let (state, setState) = React.useState(_ => form_data);
 
@@ -31,4 +28,4 @@ let form_data = {
       schema=(module(App_schema_config))
       form_data=state onChange
     />
-  }
+  } 

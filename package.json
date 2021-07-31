@@ -1,6 +1,6 @@
 {
   "name": "re-schema-form",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Patcia Gleb <jongleb@yandex.ru>",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,7 @@
     "postinstall": "node postinstall.js"
   },
   "devDependencies": {
-    "@rescript/react": "0.10.1",
-    "bs-platform": "9.0.0"
+    "@rescript/react": "0.10.3",
+    "rescript": "9.1.4"
   }
 }

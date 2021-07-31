@@ -333,26 +333,24 @@ let schema_render:
             loop(renders)
           }
 
-        let getFieldRender:
-          type t. (
-            ~resolve: common_field_wrap,
-            ~meta: b,
-            ~children: React.element,
-          ) => React.element =
-          (~resolve, ~meta, ~children) => {
-            let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
-              w,
+        let getFieldRender: (
+          ~resolve: common_field_wrap,
+          ~meta: b,
+          ~children: React.element,
+        ) => React.element = (~resolve, ~meta, ~children) => {
+          let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
+            w,
+            _,
+          )) => w == resolve)
+          switch option_field_wrapper {
+          | Some((
               _,
-            )) => w == resolve)
-            switch option_field_wrapper {
-            | Some((
-                _,
-                module(FieldWrapResolved: FieldWrapRender with type t = b),
-              )) =>
-              <FieldWrapResolved meta> {children} </FieldWrapResolved>
-            | _ => children
-            }
+              module(FieldWrapResolved: FieldWrapRender with type t = b),
+            )) =>
+            <FieldWrapResolved meta> {children} </FieldWrapResolved>
+          | _ => children
           }
+        }
 
         let getSchemaRender:
           type t. (

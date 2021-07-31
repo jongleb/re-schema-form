@@ -666,19 +666,22 @@ let create_schema_config_module ~rest name items = {
 
 let packModule ~rest i = match i with
   | Pstr_type (_, [{ ptype_kind; ptype_name }]) -> match ptype_kind with
-    | Ptype_record (labels) -> [
-      (create_object_module ~rest) ptype_name labels;
-      (create_schema_config_module ~rest) ptype_name labels
-    ]
+    | Ptype_record (labels) -> 
+      if (String.compare ptype_name.txt "schema_meta" == 0 ) 
+        then [] 
+        else [
+          (create_object_module ~rest) ptype_name labels;
+          (create_schema_config_module ~rest) ptype_name labels
+        ]
 
-let create_structure_schema ~rest root items = List.concat_map (packModule ~rest) items
+let create_structure_schema ~rest items = List.concat_map (packModule ~rest) items
 
 let createModule old_struture_items structure_items =
-  let root = structure_items |> List.rev |> List.hd in
   Mod.mk (
     Pmod_structure (
-      List.append old_struture_items (create_structure_schema ~rest: old_struture_items root structure_items)
+      List.append old_struture_items (create_structure_schema ~rest: old_struture_items structure_items)
         |> List.cons [%stri open Schema_object]
+        |> List.cons [%stri open SchemaRender]
     )
   )
 
