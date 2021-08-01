@@ -8,7 +8,7 @@
     "-bs-super-errors",
     "-bs-no-version-header"
   ],
-  "ppx-flags": ["re-schema-form/darwin"],
+  "ppx-flags": ["re-schema-form/ppx"],
   "sources": ["src"],
   "package-specs": [
     {
