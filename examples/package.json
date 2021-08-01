@@ -28,7 +28,7 @@
     "marked": "^2.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "re-schema-form": "0.0.7"
+    "re-schema-form": "0.0.8"
   },
   "devDependencies": {
     "@jihchi/vite-plugin-rescript": "^1.1.0",
