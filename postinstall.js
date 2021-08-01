@@ -11,7 +11,7 @@ if (!fs.existsSync(platform)) {
  */
 if (platform === "win32") {
   fs.copyFileSync("win32", "ppx.exe");
-  fs.chmodSync("ppx.exe", 0o744);
+  fs.chmodSync("ppx.exe", 0755);
 }
 
 fs.renameSync(platform, "ppx");
