@@ -8,7 +8,7 @@
     "-bs-super-errors",
     "-bs-no-version-header"
   ],
-  "ppx-flags": ["re-schema-form/win32"],
+  "ppx-flags": ["re-schema-form/linux"],
   "sources": ["src"],
   "package-specs": [
     {
