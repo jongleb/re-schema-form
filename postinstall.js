@@ -15,4 +15,4 @@ if (platform === "win32") {
 }
 
 fs.renameSync(platform, "ppx");
-fs.chmodSync("ppx", 0o744);
+fs.chmodSync("ppx", 0755);
