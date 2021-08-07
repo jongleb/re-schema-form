@@ -1,4 +1,4 @@
 ReactDOM.render(
-  <React.StrictMode> <App /> </React.StrictMode>,
+  <React.StrictMode> <Tabs /> </React.StrictMode>,
   ReactDOM.querySelector("#root")->Belt.Option.getExn,
 )

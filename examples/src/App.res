@@ -10,7 +10,7 @@ open StateSchema
 
 let form_data = {
  first_field: "Abcd",
- second_field: 123,
+ second_field: 1234,
 }
 
 @react.component
