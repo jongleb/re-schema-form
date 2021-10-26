@@ -247,6 +247,15 @@ type renders = list<render_field_wrap>
 
 type rec eq<_, _> = Eq: eq<'a, 'a>
 
+module SchemaRender = {
+  type t = bool
+  @react.component
+  let make = (~value: t, ~onChange: t => unit) => {
+    let onChange = e => ReactEvent.Form.target(e)["checked"] |> onChange
+    <input type_="checkbox" checked=value onChange />
+  }
+}
+
 let schema_render:
   type a b. (
     ~renders: renders,
