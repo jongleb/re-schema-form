@@ -16,7 +16,7 @@ external makeProps: (
 
 let make: type t r k. props<t, r, k> => React.element = (props: props<t, r, k>) => {
    switch props.field {
-      | SObject(s) => React.string("2")
+      | SObject(arr) => <ObjectRender formData=props.formData schema=arr onChange=props.onChange />
       | Primitive(s) => React.string("2")
       | SArr(s) => React.string("3")
       | _ => React.string("")

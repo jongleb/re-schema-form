@@ -28,5 +28,5 @@ let make = (type t r k, props: props<t, r, k>) => {
     objRef.current = props.obj
     None
   }, (props.onChange, props.obj))
-  <span></span>
+  <SchemaRender2 formData=Field.get(props.obj) field=Field onChange />
 }
