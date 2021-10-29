@@ -4,7 +4,6 @@ type props<'t, 'r, 'k> = {
   obj: 'r,
   field: schemaElement<'t, 'r, 'k>,
   onChange: 'r => unit,
-  formData: 'k,
 }
 
 @obj
@@ -12,8 +11,9 @@ external makeProps: (
   ~obj: 'r,
   ~field: schemaElement<'t, 'r, 'k>,
   ~onChange: 'r => unit,
-  ~formData: 'k,
+  ()
 ) => props<'t, 'r, 'k> = ""
+
 
 let make = (type t r k, props: props<t, r, k>) => {
   let SchemaElement(
@@ -28,5 +28,5 @@ let make = (type t r k, props: props<t, r, k>) => {
     objRef.current = props.obj
     None
   }, (props.onChange, props.obj))
-  2
+  <span></span>
 }
