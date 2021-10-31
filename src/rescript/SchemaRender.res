@@ -74,8 +74,11 @@ and SwitchRender: SwitchRender = {
         <ObjectRender
           formData=props.formData schema=arr onChange=props.onChange
         />
-      | Primitive(s) => React.string("2")
-      | SArr(s) => React.string("3")
+      | Primitive(_) =>
+        <PrimitiveRender
+          field=props.field onChange=props.onChange formData=props.formData
+        />
+      | SArr(_) => React.string("3")
       | _ => React.string("")
       }
     }

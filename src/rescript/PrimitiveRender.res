@@ -19,6 +19,8 @@ let make = (type t r k, props: props<t, r, k>) => {
   let Primitive(p) = props.field
   switch p {
   | SString => <StringWidget value=props.formData onChange=props.onChange />
-  | S => expression
+  | SInt => React.string("Not implemented")
+  | SFloat => React.string("Not implemented")
+  | SBool => React.string("Not implemented")
   }
 }

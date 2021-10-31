@@ -1,5 +1,4 @@
-module Schema = {
-  module type Field = {
+module type Field = {
     type t
     type r
     type meta
@@ -27,4 +26,3 @@ module Schema = {
     SchemaListItem(schemaElement<'s, 't, 'k>): schemaListItem<'t>
   and schemaElement<'t, 'r, 'k> =
     SchemaElement(t<'t, 'r, 'k>, module(Field with type t = 'k and type r = 'r))
-}
