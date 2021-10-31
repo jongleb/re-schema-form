@@ -1,26 +1,24 @@
 open Schema
 open Widgets
 
-type props<'t, 'r> = {
-    obj: 'r,
-    field: Schema.t<primitive<'t>, 'r, 't>,
-    onChange: 'r => ()
-};
+type props<'t, 'r, 'k> = {
+  field: Schema.t<primitive<'k>, 'r, 'k>,
+  onChange: 'k => unit,
+  formData: 'k,
+}
 
-@obj external makeProps:(
-    ~obj: 'r, 
-    ~field: Schema.t<<primitive<'t>, 'r, 't>, 
-    ~onChange: 'r => ()
-) => props<'t, 'r> = ""
+@obj
+external makeProps: (
+  ~field: Schema.t<primitive<'k>, 'r, 'k>,
+  ~onChange: 'k => unit,
+  ~formData: 'k,
+  unit,
+) => props<'t, 'r, 'k> = ""
 
-let make = (type t, type r, props: props<t, r>) => {
-//    let Primitive(p, module(Field): module(Field with type t = t and type r = r)) = props.field
-//    let onChange = React.useCallback0((val: t) => {
-//     val |> Field.set(props.obj) |> props.onChange
-//    })
-//    switch p {
-//    | SString => <StringWidget onChange value=Field.get(props.obj) />
-//    | _ => React.string("Not implemented")
-//    }
-    React.string("Not implemented")
+let make = (type t r k, props: props<t, r, k>) => {
+  let Primitive(p) = props.field
+  switch p {
+  | SString => <StringWidget value=props.formData onChange=props.onChange />
+  | S => expression
+  }
 }
