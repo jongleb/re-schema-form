@@ -88,4 +88,3 @@ ReactDOM.render(
   <React.StrictMode> <TestForm /> </React.StrictMode>,
   ReactDOM.querySelector("#root")->Belt.Option.getExn,
 )
-Js.Console.log("ds")

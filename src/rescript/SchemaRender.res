@@ -1,10 +1,13 @@
 open Schema
+open UiSchema
+
 module type SchemaRender = {
   @react.component
   let make: (
     ~field: Schema.t<'t, 'r, 'k>,
     ~onChange: 'k => unit,
     ~formData: 'k,
+    ~uiSchema: module(FieldUiSchema with type t = 't)
   ) => React.element
 }
 module type SwitchRender = {
@@ -47,9 +50,10 @@ module type ReRender = {
 }
 module rec SchemaRender: SchemaRender = {
   @react.component
-  let make = (~field, ~onChange, ~formData) => {
+  let make = (~field, ~onChange, ~formData, ~uiSchema) => {
     <SwitchRender field onChange formData />
   }
+  React.setDisplayName(make, "SchemaRender")
 }
 and SwitchRender: SwitchRender = {
   type props<'t, 'r, 'k> = {
@@ -82,6 +86,8 @@ and SwitchRender: SwitchRender = {
       | _ => React.string("")
       }
     }
+
+  React.setDisplayName(make, "SwitchRender")
 }
 and ObjectRender: ObjectRender = {
   @react.component
@@ -98,6 +104,7 @@ and ObjectRender: ObjectRender = {
       |> React.array}
     </React.Fragment>
   }
+  React.setDisplayName(make, "ObjectRender")
 }
 and ReRender: ReRender = {
   type props<'t, 'r, 'k> = {
@@ -118,6 +125,7 @@ and ReRender: ReRender = {
     let SchemaElement(
       schema,
       module(Field: Field with type t = k and type r = r),
+      uiSchema,
     ) = props.field
     let objRef = React.useRef(props.obj)
     let onChange = React.useCallback0((val: k) =>
@@ -129,4 +137,5 @@ and ReRender: ReRender = {
     }, (props.onChange, props.obj))
     <SchemaRender field=schema onChange formData={Field.get(props.obj)} />
   }
+  React.setDisplayName(make, "ReRender")
 }

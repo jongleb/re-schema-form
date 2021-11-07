@@ -6,7 +6,6 @@ type props<'t, 'r, 'k> = {
   onChange: 'k => unit,
   formData: 'k,
 }
-
 @obj
 external makeProps: (
   ~field: Schema.t<primitive<'k>, 'r, 'k>,
@@ -17,10 +16,12 @@ external makeProps: (
 
 let make = (type t r k, props: props<t, r, k>) => {
   let Primitive(p) = props.field
-  switch p {
+  switch (p: primitive<k>) {
   | SString => <StringWidget value=props.formData onChange=props.onChange />
-  | SInt => React.string("Not implemented")
-  | SFloat => React.string("Not implemented")
-  | SBool => React.string("Not implemented")
+  | SInt => <IntWidget value=props.formData onChange=props.onChange />
+  | SFloat => <FloatWidget value=props.formData onChange=props.onChange />
+  | SBool => <BoolWidget value=props.formData onChange=props.onChange />
   }
 }
+
+React.setDisplayName(make, "PrimitiveRender")
