@@ -2,13 +2,23 @@ open Schema
 open UiSchema
 
 module type SchemaRender = {
-  @react.component
-  let make: (
+  type props<'t, 'r, 'k> = {
+    field: Schema.t<'t, 'r, 'k>,
+    onChange: 'k => unit,
+    formData: 'k,
+    uiSchema: module(FieldUiSchema with type t = 'k),
+  }
+
+  @obj
+  external makeProps: (
     ~field: Schema.t<'t, 'r, 'k>,
     ~onChange: 'k => unit,
     ~formData: 'k,
-    ~uiSchema: module(FieldUiSchema with type t = 't)
-  ) => React.element
+    ~uiSchema: module(FieldUiSchema with type t = 'k),  
+    unit,
+  ) => props<'t, 'r, 'k> = ""
+
+  let make: (props<'t, 'r, 'k>) => React.element
 }
 module type SwitchRender = {
   type props<'t, 'r, 'k> = {
@@ -49,10 +59,28 @@ module type ReRender = {
   let make: props<'t, 'r, 'k> => React.element
 }
 module rec SchemaRender: SchemaRender = {
-  @react.component
-  let make = (~field, ~onChange, ~formData, ~uiSchema) => {
-    <SwitchRender field onChange formData />
+  type props<'t, 'r, 'k> = {
+    field: Schema.t<'t, 'r, 'k>,
+    onChange: 'k => unit,
+    formData: 'k,
+    uiSchema: module(FieldUiSchema with type t = 'k),
   }
+
+  @obj
+  external makeProps: (
+    ~field: Schema.t<'t, 'r, 'k>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    ~uiSchema: module(FieldUiSchema with type t = 'k),  
+    unit,
+  ) => props<'t, 'r, 'k> = ""
+
+  let make:
+    type t r k. React.component<props<t, r, k>> =
+    (props: props<t, r, k>) => {
+      let module(UiSchema: FieldUiSchema with type t = k) = props.uiSchema
+      <SwitchRender field=props.field onChange=props.onChange formData=props.formData />
+    }
   React.setDisplayName(make, "SchemaRender")
 }
 and SwitchRender: SwitchRender = {
@@ -135,7 +163,7 @@ and ReRender: ReRender = {
       objRef.current = props.obj
       None
     }, (props.onChange, props.obj))
-    <SchemaRender field=schema onChange formData={Field.get(props.obj)} />
+    <SchemaRender uiSchema field=schema onChange formData={Field.get(props.obj)} />
   }
   React.setDisplayName(make, "ReRender")
 }

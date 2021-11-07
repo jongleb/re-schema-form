@@ -2,5 +2,5 @@ module type UiField = {
   type t
 
   @react.component
-  let make: (~value: t, ~onChange: t => unit) => React.element
+  let make: (~value: t, ~onChange: t => unit, ~children: React.element) => React.element
 }

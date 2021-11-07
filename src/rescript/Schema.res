@@ -1,3 +1,4 @@
+open UiSchema
 module type Field = {
   type t
   type r
@@ -29,5 +30,5 @@ and schemaElement<'t, 'r, 'k> =
   | SchemaElement(
       t<'t, 'r, 'k>,
       module(Field with type t = 'k and type r = 'r),
-      module(UiSchema.FieldUiSchema with type t = 'k),
+      module(FieldUiSchema with type t = 'k),
     )
