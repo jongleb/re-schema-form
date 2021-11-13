@@ -4,7 +4,7 @@ open Ast_mapper
 open Asttypes
 open Parsetree
 open Ast_helper
-
+open Field_create
 let gadtFieldName = "field"
 
 let create_schema_config_name txt = String.concat "_" [String.capitalize_ascii txt; "schema_config"]
