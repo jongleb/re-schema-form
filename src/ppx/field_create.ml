@@ -4,14 +4,6 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
-let field_prefix = "Field"
-
-let create_module_name (name: string Location.loc) = {
-  txt = Some(String.concat "" [String.capitalize_ascii name.txt; field_prefix]);
-  loc = Location.none;
-}
-  
-
 let create_record_type record_name = [%stri
   type r = [%t Typ.mk(Ptyp_constr({ loc = Location.none; txt = Lident(record_name.txt)}, []))]
 ]
@@ -35,24 +27,17 @@ let create_setter ~(record_name: string Location.loc) label =
   let value_bind = Vb.mk fn_name_loc (Exp.mk fn_with_field_record_arg) in
   Str.mk (Pstr_value(Nonrecursive, [value_bind]))
 
+let create_pmod_structure ~(record_name: string Location.loc) label  = 
+ Pmod_structure([
+    [%stri
+      type t = [%t label.pld_type]
+    ];
+    create_record_type record_name;
+    create_getter ~record_name label;
+    create_setter ~record_name label;
+])
 
-let create_field_module ~(record_name: string Location.loc) ~(rest: structure_item list) label = {
-  pstr_loc = Location.none;
-  pstr_desc = Pstr_module({
-    pmb_name = create_module_name label.pld_name;
-    pmb_attributes = [];
-    pmb_loc = Location.none;
-    pmb_expr = {
-      pmod_attributes = [];
-      pmod_loc = Location.none;
-      pmod_desc = Pmod_structure([
-        [%stri
-          type t = [%t label.pld_type]
-        ];
-        create_record_type record_name;
-        create_getter ~record_name label;
-        create_setter ~record_name label;
-      ])
-    };
-  })
-}
+let create_first_class_field_module ~(record_name: string Location.loc) label = 
+  label 
+    |> create_pmod_structure ~record_name
+    |> Mod.mk
