@@ -17,7 +17,7 @@ let create_pmod_structure ~(record_name: string Location.loc) label  =
     ]
 ])
 
-let create_first_class_ui_module ~(record_name: string Location.loc) label = 
+let create ~(record_name: string Location.loc) label = 
   label 
     |> create_pmod_structure ~record_name 
     |> Mod.mk

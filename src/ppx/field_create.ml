@@ -37,7 +37,7 @@ let create_pmod_structure ~(record_name: string Location.loc) label  =
     create_setter ~record_name label;
 ])
 
-let create_first_class_field_module ~(record_name: string Location.loc) label = 
+let create ~(record_name: string Location.loc) label = 
   label 
     |> create_pmod_structure ~record_name
     |> Mod.mk
