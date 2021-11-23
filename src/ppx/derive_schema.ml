@@ -4,14 +4,22 @@ open Ast_mapper
 open Asttypes
 open Parsetree
 open Ast_helper
-open Field_create
+open Record_to_schema
 
-let create_structure_schema pstr_descs = List.concat_map (packModule ~rest) pstr_descs
 
-let createModule old_struture_items pstr_descs =
+let create_structure_schema items = items
+  |> List.find_map ( fun {pstr_desc} -> 
+    match pstr_desc with
+    | Pstr_type(_, [d]) -> Some(d)
+    | _ -> None
+  )
+  |> Option.map (create_schema items)
+  |> Option.value ~default:[]
+
+let createModule struture_items =
   Mod.mk (
     Pmod_structure (
-      List.append old_struture_items (create_structure_schema pstr_descs)
+      List.append struture_items (create_structure_schema struture_items)
         |> List.cons [%stri open Schema]
     )
   )
@@ -19,7 +27,7 @@ let createModule old_struture_items pstr_descs =
 let map_module_expr mapper expr = match expr with
   | { pmod_desc = Pmod_extension ({ txt = "schema" },
       PStr(structure_items)) 
-    } -> createModule structure_items (List.map (fun i -> i.pstr_desc) structure_items )
+    } -> createModule structure_items
   | other -> default_mapper.module_expr mapper expr
 
 let schema_mapper = {

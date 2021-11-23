@@ -37,6 +37,23 @@ let create_pmod_structure ~(record_name: string Location.loc) label  =
     create_setter ~record_name label;
 ])
 
+let create_root (name: string Location.loc) =
+  let type_expr = Typ.constr { loc = Location.none; txt = Lident(name.txt) } [] in 
+  Pmod_structure([
+    [%stri
+      type t = [%t type_expr]
+    ];
+    [%stri
+      type r = [%t type_expr]
+    ];
+    [%stri
+      let get (root: t) = root
+    ];
+    [%stri
+      let set (_, root: t) = root
+    ]
+  ])
+
 let create ~(record_name: string Location.loc) label = 
   label 
     |> create_pmod_structure ~record_name

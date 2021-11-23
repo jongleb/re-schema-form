@@ -8,7 +8,7 @@
     "-bs-super-errors",
     "-bs-no-version-header"
   ],
-  "ppx-flags": [],
+  "ppx-flags": ["../_build/default/src/bin/bin.exe"],
   "sources": ["src", "../src/rescript"],
   "package-specs": [
     {
