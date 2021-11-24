@@ -74,7 +74,7 @@ let create_root (name: type_declaration) =
       let get (root: r) = root
     ];
     [%stri
-      let set (_, root: r) = root
+      let set _ (root: r) = root
     ]
   ])
 

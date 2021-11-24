@@ -52,7 +52,10 @@ let create_schema (list: structure_item list) root =
     | Ptype_record(r) -> r
     | _ -> Location.raise_errorf "Unexpected ptype_kind" in
   let expressions = decls |> create_field_modules ~record_name:root ~rest:list |> Exp.array in
-  let type_expr = Typ.constr { loc = Location.none; txt = Lident(root.ptype_name.txt) } [] in 
+  let root_field_module = root |> create_root |> Mod.mk |> Exp.pack in
+  let root_ui_module = root |> Ui_create.create_root |> Mod.mk |> Exp.pack in
   [[%stri
-    let schema: (obj, [%t type_expr], [%t type_expr]) Schema.t = SObject([%e expressions])
+    let schema = SchemaElement(
+      SObject([%e expressions]), [%e root_field_module], [%e root_ui_module]
+    )
   ]]

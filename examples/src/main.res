@@ -1,5 +1,3 @@
-open Schema
-
 module TestForm = {
 
   module UserTest = %schema(
@@ -21,7 +19,7 @@ module TestForm = {
         Js.Console.log(v);
         setState(_ => v);
      };
-    <FormRender formData=state field=schema onChange uiSchema=module(UiSchemaUserField) />
+    <FormRender formData=state field=schema onChange />
   }
 }
 

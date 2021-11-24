@@ -6,8 +6,7 @@
   "reason": { "react-jsx": 3 },
   "bsc-flags": [
     "-bs-super-errors",
-    "-bs-no-version-header",
-    "-dsource"
+    "-bs-no-version-header"
   ],
   "ppx-flags": ["../_build/default/src/bin/bin.exe"],
   "sources": ["src", "../src/rescript"],
