@@ -58,8 +58,8 @@ let create_pmod_structure ~(record_name: type_declaration) label  =
     create_setter ~record_name label;
 ])
 
-let create_root (name: type_declaration) =
-  let type_expr = Typ.constr { loc = Location.none; txt = Lident(name.ptype_name.txt) } [] in
+let create_root (txt) =
+  let type_expr = Typ.constr { loc = Location.none; txt = Lident(txt) } [] in
   Pmod_structure([
     [%stri
       type t = [%t type_expr]

@@ -1,14 +1,21 @@
 module TestForm = {
 
   module UserTest = %schema(
+    type fullName = {
+      name: string,
+    }
     type user = {
-      name: string
+      fullName,
+      age: int,
+      height: float,
+      isTest: bool,
     }
   )
 
   open UserTest
 
-  let formData = { name: "test" }
+  let fullName = {name: ""}
+  let formData = { fullName, age: 23, height: 185.5, isTest: false, }
 
   @react.component
   let make = () => {
