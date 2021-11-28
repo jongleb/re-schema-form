@@ -53,7 +53,7 @@ let rec parse_opt_obj ~(rest: structure_item list) core_type =
 
 and pasre_array_primitive core_type ~record_name ~rest label =
   match (core_type) with
-  | ([%type: [%t? t] array]) -> Some([%expr SArr([%e parse_type ~record_name ~rest label])])
+  | ([%type: [%t? t] array]) -> Some([%expr SArr([%e parse_wrapped t ~rest label])])
   | _ -> None
 
 and parse_wrapped core_type ~rest (label: label_declaration) = 
@@ -69,7 +69,7 @@ and parse_wrapped core_type ~rest (label: label_declaration) =
     [%expr 
       SchemaListItem(
         SchemaElement(
-          r,
+          [%e r],
           [%e root_field_module],
           [%e root_ui_module]
         )

@@ -2,6 +2,8 @@ open Schema
 open UiSchema
 open UiFields
 
+type m
+
 module type SchemaRender = {
   type props<'t, 'r, 'k> = {
     field: Schema.t<'t, 'r, 'k>,

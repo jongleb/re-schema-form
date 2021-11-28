@@ -3,7 +3,6 @@ open UiSchema
 module type Field = {
   type t
   type r
-  type meta
   let get: r => t
   let set: (r, t) => r
 }
@@ -21,7 +20,7 @@ type rec primitive<'t> =
 type rec t<'t, 'r, _> =
   | Primitive(primitive<'t>): t<primitive<'t>, 'r, 't>
   | SObject(array<schemaListItem<'t>>): t<obj, 'r, 't>
-  | SArr(schemaElement<'k, 'r, 't>): t<arr, 'r, array<'t>>
+  | SArr(schemaListItem<'t>): t<arr, 'r, array<'t>>
   | SNull(schemaElement<'k, 'r, 't>): t<nullable, 'r, option<'t>>
 
 and schemaListItem<'t> =
@@ -32,4 +31,5 @@ and schemaElement<'t, 'r, 'k> =
       t<'t, 'r, 'k>,
       module(Field with type t = 'k and type r = 'r),
       module(FieldUiSchema with type t = 'k),
+      'm
     )
