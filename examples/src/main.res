@@ -1,10 +1,12 @@
 module TestForm = {
 
   module UserTest = %schema(
+    type sc_meta_data = { r: int }
     type fullName = {
       name: string,
     }
     type user = {
+      @sc_meta({r: 2})
       fullName,
       age: int,
       height: float,

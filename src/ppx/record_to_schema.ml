@@ -13,13 +13,14 @@ end
 let create_first_class_module ~(record_name: type_declaration) label (module M: Create_first_class) = 
   Exp.mk (Pexp_pack(M.create ~record_name label))
 
-let apply_to_schema_list_item (fn: (module Create_first_class) -> expression) expr = 
+let apply_to_schema_list_item label (fn: (module Create_first_class) -> expression) expr = 
   [%expr 
     SchemaListItem(
       SchemaElement(
         [%e expr],
         [%e fn (module(Field_create))],
-        [%e fn (module(Ui_create))]
+        [%e fn (module(Ui_create))],
+        [%e Meta_create.create label]
       )
     )
   ]
@@ -35,11 +36,11 @@ let pasre_opt_primitive core_type =
 let rec parse_opt_obj ~(rest: structure_item list) core_type =
   match core_type.ptyp_desc with
   | Ptyp_constr({txt=Lident(li)}, _) ->
-    rest 
+      rest 
       |> List.find_map (fun i -> 
           match i.pstr_desc with
           | Pstr_type(_, [d]) -> 
-            if d.ptype_name.txt = li then Some(d) else None
+              if d.ptype_name.txt = li then Some(d) else None
           | _ -> None
         ) 
       |> Option.map(fun i ->
@@ -59,34 +60,35 @@ and pasre_array_primitive core_type ~record_name ~rest label =
 and parse_wrapped core_type ~rest (label: label_declaration) = 
   core_type 
   |> pasre_opt_primitive 
-  <|> Lazy.from_fun(fun () -> parse_opt_obj ~rest label.pld_type)
+     <|> Lazy.from_fun(fun () -> parse_opt_obj ~rest label.pld_type)
   |> Option.map (fun r -> 
-    let name = match core_type.ptyp_desc with
-    | Ptyp_constr({txt=Lident(li)}, _) -> li
-    | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *) in 
-    let root_field_module = name |> create_root |> Mod.mk |> Exp.pack in
-    let root_ui_module = name |> Ui_create.create_root |> Mod.mk |> Exp.pack in
-    [%expr 
-      SchemaListItem(
-        SchemaElement(
-          [%e r],
-          [%e root_field_module],
-          [%e root_ui_module]
+      let name = match core_type.ptyp_desc with
+        | Ptyp_constr({txt=Lident(li)}, _) -> li
+        | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *) in 
+      let root_field_module = name |> create_root |> Mod.mk |> Exp.pack in
+      let root_ui_module = name |> Ui_create.create_root |> Mod.mk |> Exp.pack in
+      [%expr 
+        SchemaListItem(
+          SchemaElement(
+            [%e r],
+            [%e root_field_module],
+            [%e root_ui_module],
+            None
+          )
         )
-      )
-    ]
-  ) |> Option.get
+      ]
+    ) |> Option.get
   
     
 and parse_type ~(record_name: type_declaration) ~rest (label: label_declaration) = 
-  let apply = apply_to_schema_list_item (create_first_class_module ~record_name label) in
+  let apply = apply_to_schema_list_item label (create_first_class_module ~record_name label) in
   let array = pasre_array_primitive label.pld_type ~record_name ~rest label in
   let primitive_opt = Lazy.from_fun(fun () -> pasre_opt_primitive label.pld_type) in
   let obj_opt = Lazy.from_fun(fun () -> parse_opt_obj ~rest label.pld_type) in
   let result = array <|> primitive_opt <|> obj_opt in
   match (result) with
-    | Some(r) -> apply r
-    | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *)
+  | Some(r) -> apply r
+  | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *)
 
 and create_field_modules ~(record_name: type_declaration) ~(rest: structure_item list) (labels: Parsetree.label_declaration list) =
   List.map (parse_type ~record_name ~rest) labels
@@ -98,8 +100,17 @@ let create_schema (list: structure_item list) root =
   let expressions = decls |> create_field_modules ~record_name:root ~rest:list |> Exp.array in
   let root_field_module = root.ptype_name.txt |> create_root |> Mod.mk |> Exp.pack in
   let root_ui_module = root.ptype_name.txt |> Ui_create.create_root |> Mod.mk |> Exp.pack in
+  let root_type_name = Typ.constr { loc = Location.none; txt = Lident(root.ptype_name.txt)} []in
   [[%stri
-    let schema = SchemaElement(
-      SObject([%e expressions]), [%e root_field_module], [%e root_ui_module]
-    )
+    let schema: 
+      (obj, 
+       [%t root_type_name],
+       [%t root_type_name], 
+       sc_meta_data
+      ) schemaElement = SchemaElement(
+        SObject([%e expressions]), 
+        [%e root_field_module], 
+        [%e root_ui_module],
+        None
+      )
   ]]
