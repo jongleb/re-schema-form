@@ -6,7 +6,6 @@ module TestForm = {
       name: string,
     }
     type user = {
-      @sc_meta({r: 2})
       fullName,
       age: int,
       height: float,
