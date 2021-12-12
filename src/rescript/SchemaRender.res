@@ -188,3 +188,6 @@ and ReRender: ReRender = {
   }
   let () = React.setDisplayName(make, "ReRender")
 }
+module ArrayRender = {
+  
+}

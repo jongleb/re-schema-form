@@ -14,10 +14,5 @@ let create_if_not_exists struture_items =
   then []
   else [[%stri type sc_meta_data]]
 
-let create ({pld_attributes}: label_declaration) = 
-  let el = List.nth_opt pld_attributes 0 in
-  match el with
-  | Some({
-      attr_name={txt="sc_meta"};
-      attr_payload=PStr([{pstr_desc=Pstr_eval(e, _)}])}) -> [%expr Some([%e e])]
-  | _ -> [%expr None]
+let create (label: label_declaration) = 
+  Utils.get_attribute_or ~name:"sc_meta" label [%expr None] (fun e -> [%expr Some([%e e])])
