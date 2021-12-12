@@ -8,5 +8,5 @@ let make = (~field: schemaElement<obj, 'r, 'k, 'm>, ~onChange: 'k => (), ~formDa
       uiSchema,
       _,
     ) = field
-    <SchemaRender.SchemaRender field=schema onChange formData uiSchema />
+    <SchemaRender.Impl field=schema onChange formData uiSchema />
 }
