@@ -7,6 +7,9 @@ open Ast_helper
 let get_widget label =
   Utils.get_attribute_or ~name:"sc_widget" label [%expr None] (fun e -> [%expr Some([%e e])])
 
+let get_field label = 
+    Utils.get_attribute_or ~name:"sc_field" label [%expr None] (fun e -> [%expr Some([%e e])])  
+
 
 let create_pmod_structure ~(record_name: type_declaration) label  = 
  Pmod_structure([
@@ -17,7 +20,7 @@ let create_pmod_structure ~(record_name: type_declaration) label  =
       let widget = [%e get_widget label]
     ];
     [%stri
-      let field = None
+      let field = [%e get_field label]
     ]
 ])
 

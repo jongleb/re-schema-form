@@ -26,7 +26,7 @@ module type SwitchRender = {
     field: Schema.t<'t, 'r, 'k, 'm>,
     onChange: 'k => unit,
     formData: 'k,
-    widget: option<module(Widgets.Widget with type t = 'k)>
+    widget: option<module(Widgets.Widget with type t = 'k)>,
   }
   @obj
   external makeProps: (
@@ -85,7 +85,7 @@ module rec Impl: SchemaRender = {
       let switchRender =
         <SwitchRender
           field=props.field
-          onChange=props.onChange 
+          onChange=props.onChange
           formData=props.formData
           widget=UiSchema.widget
         />
@@ -104,12 +104,12 @@ and SwitchRender: SwitchRender = {
     field: Schema.t<'t, 'r, 'k, 'm>,
     onChange: 'k => unit,
     formData: 'k,
-    widget: option<module(Widgets.Widget with type t = 'k)>
+    widget: option<module(Widgets.Widget with type t = 'k)>,
   }
 
   @obj
   external makeProps: (
-    ~field: Schema.t<'t, 'r, 'k, 'm>, 
+    ~field: Schema.t<'t, 'r, 'k, 'm>,
     ~onChange: 'k => unit,
     ~formData: 'k,
     ~widget: option<module(Widgets.Widget with type t = 'k)>,
@@ -119,7 +119,7 @@ and SwitchRender: SwitchRender = {
   let make:
     type t r k m. props<t, r, k, m> => React.element =
     (props: props<t, r, k, m>) => {
-      switch props.field {
+      let defaultWidget = switch props.field {
       | SObject(arr) =>
         <ObjectRender
           formData=props.formData schema=arr onChange=props.onChange
@@ -131,6 +131,10 @@ and SwitchRender: SwitchRender = {
       | SArr(_) => React.string("3")
       | _ => React.string("")
       }
+
+      props.widget->Belt.Option.mapWithDefault(defaultWidget, (
+        module(ComponentWidget: Widgets.Widget with type t = k),
+      ) => <ComponentWidget onChange=props.onChange value=props.formData />)
     }
 
   let () = React.setDisplayName(make, "SwitchRender")
@@ -182,12 +186,10 @@ and ReRender: ReRender = {
       objRef.current = props.obj
       None
     }, (props.onChange, props.obj))
-    <Impl
-      uiSchema field=schema onChange formData={Field.get(props.obj)}
-    />
+    <Impl uiSchema field=schema onChange formData={Field.get(props.obj)} />
   }
   let () = React.setDisplayName(make, "ReRender")
 }
 module ArrayRender = {
-  
+
 }
