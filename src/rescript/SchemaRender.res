@@ -51,12 +51,14 @@ module type ReRender = {
     obj: 'r,
     field: schemaElement<'t, 'r, 'k, 'm>,
     onChange: 'r => unit,
+    key: string,
   }
   @obj
   external makeProps: (
     ~obj: 'r,
     ~field: schemaElement<'t, 'r, 'k, 'm>,
     ~onChange: 'r => unit,
+    ~key: string,
     unit,
   ) => props<'t, 'r, 'k, 'm> = ""
   let make: props<'t, 'r, 'k, 'm> => React.element
@@ -82,6 +84,7 @@ module rec Impl: SchemaRender = {
     type t r k m. React.component<props<t, r, k, m>> =
     (props: props<t, r, k, m>) => {
       let module(UiSchema: FieldUiSchema with type t = k) = props.uiSchema
+      let fieldTemplateContext = React.useContext(FieldTemplateContext.context)
       let switchRender =
         <SwitchRender
           field=props.field
@@ -89,12 +92,19 @@ module rec Impl: SchemaRender = {
           formData=props.formData
           widget=UiSchema.widget
         />
-      switch UiSchema.field {
+      let withUiField = switch UiSchema.field {
       | Some(module(UiField: UiField with type t = k)) =>
         <UiField value=props.formData onChange=props.onChange>
           {switchRender}
         </UiField>
       | _ => switchRender
+      }
+      switch fieldTemplateContext {
+      | Some(module(Field)) =>
+        <Field value=props.formData onChange=props.onChange>
+          {withUiField}
+        </Field>
+      | _ => withUiField
       }
     }
   let () = React.setDisplayName(make, "SchemaRender")
@@ -148,8 +158,8 @@ and ObjectRender: ObjectRender = {
   ) => {
     <React.Fragment>
       {schema
-      |> Array.map((SchemaListItem(field)) =>
-        <ReRender obj=formData field onChange />
+      |> Js.Array.mapi((SchemaListItem(field), i) =>
+        <ReRender key={Belt.Int.toString(i)} obj=formData field onChange />
       )
       |> React.array}
     </React.Fragment>
@@ -161,6 +171,7 @@ and ReRender: ReRender = {
     obj: 'r,
     field: schemaElement<'t, 'r, 'k, 'm>,
     onChange: 'r => unit,
+    key: string,
   }
 
   @obj
@@ -168,6 +179,7 @@ and ReRender: ReRender = {
     ~obj: 'r,
     ~field: schemaElement<'t, 'r, 'k, 'm>,
     ~onChange: 'r => unit,
+    ~key: string,
     unit,
   ) => props<'t, 'r, 'k, 'm> = ""
 

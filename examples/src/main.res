@@ -9,7 +9,7 @@ module TestForm = {
         e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange,
         [onChange],
       )
-      <input value=Belt_Int.toString(value) type_="number" onChange />
+      <input style={ReactDOM.Style.make(~color="#71bc78", ~fontSize="28px", ())} value=Belt_Int.toString(value) type_="number" onChange />
     }
     React.setDisplayName(make, "AgeWidget")
   }
