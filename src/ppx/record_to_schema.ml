@@ -52,24 +52,29 @@ let rec parse_opt_obj ~(rest: structure_item list) core_type =
         )
   | _ -> None
 
-and pasre_array_primitive core_type ~record_name ~rest =
+and pasre_array_primitive core_type ~record_name ~rest (label: label_declaration) =
   match (core_type) with
   | ([%type: [%t? t] array]) -> begin
       t 
-       |> parse_opt_as ~record_name ~rest 
-       |> Option.map (fun r -> [%expr SArr([%e r], [%e create_root])]) 
-      (* TODO: Empty ui schema of course it's temporary, fix it in feature as other uischema fields *)
+       |> parse_opt_as ~record_name ~rest label
+       |> Option.map (fun r -> 
+          let ui = label |> Ui_create.create_pmod_structure t |> Mod.mk in
+          [%expr SArr([%e r], [%e (Exp.mk (Pexp_pack(ui)))])]
+        ) 
+      (* TODO: not all 
+      recursive levels ui schema of 
+      course it's temporary, fix it in feature as other uischema fields *)
     end
   | _ -> None
 
-and parse_opt_as ~(record_name: type_declaration) ~rest core_type = 
-  let array = pasre_array_primitive core_type ~record_name ~rest in
+and parse_opt_as ~(record_name: type_declaration) ~rest (label: label_declaration) core_type = 
+  let array = pasre_array_primitive core_type ~record_name ~rest label in
   let primitive_opt = Lazy.from_fun(fun () -> pasre_opt_primitive core_type) in
   let obj_opt = Lazy.from_fun(fun () -> parse_opt_obj ~rest core_type) in
   array <|> primitive_opt <|> obj_opt  
 and parse_type ~(record_name: type_declaration) ~rest (label: label_declaration) = 
   let apply = apply_to_schema_list_item label (create_first_class_module ~record_name label) in
-  let result = parse_opt_as ~record_name ~rest label.pld_type in
+  let result = parse_opt_as ~record_name ~rest label label.pld_type in
   match (result) with
   | Some(r) -> apply r
   | _ -> field_not_supported() (* TODO: what? concrete location pls fix *)

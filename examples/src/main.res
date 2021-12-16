@@ -26,14 +26,14 @@ module TestForm = {
       age: int,
       height: float,
       isTest: bool,
-      // test2: array<int>
+      test2: array<int>
     }
   )
 
   open UserTest
 
   let fullName = {name: ""}
-  let formData = { fullName, age: 23, height: 185.5, isTest: false }
+  let formData = { fullName, age: 23, height: 185.5, isTest: false, test2: [2,34] }
 
   @react.component
   let make = () => {
