@@ -16,12 +16,10 @@ let create_first_class_module ~(record_name: type_declaration) label (module M: 
 let apply_to_schema_list_item label (fn: (module Create_first_class) -> expression) expr = 
   [%expr 
     SchemaListItem(
-      SchemaElement(
-        [%e expr],
-        [%e fn (module(Field_create))],
-        [%e fn (module(Ui_create))],
-        [%e Meta_create.create label]
-      )
+      [%e expr],
+      [%e fn (module(Field_create))],
+      [%e fn (module(Ui_create))],
+      [%e Meta_create.create label]
     )
   ]
  
@@ -69,12 +67,10 @@ and parse_wrapped core_type ~rest (label: label_declaration) =
       let root_ui_module = name |> Ui_create.create_root |> Mod.mk |> Exp.pack in
       [%expr 
         SchemaListItem(
-          SchemaElement(
             [%e r],
             [%e root_field_module],
             [%e root_ui_module],
             None
-          )
         )
       ]
     ) |> Option.get
@@ -98,19 +94,19 @@ let create_schema (list: structure_item list) root =
     | Ptype_record(r) -> r
     | _ -> Location.raise_errorf "Unexpected ptype_kind" in
   let expressions = decls |> create_field_modules ~record_name:root ~rest:list |> Exp.array in
-  let root_field_module = root.ptype_name.txt |> create_root |> Mod.mk |> Exp.pack in
   let root_ui_module = root.ptype_name.txt |> Ui_create.create_root |> Mod.mk |> Exp.pack in
   let root_type_name = Typ.constr { loc = Location.none; txt = Lident(root.ptype_name.txt)} []in
-  [[%stri
+  [
+    [%stri
     let schema: 
       (obj, 
        [%t root_type_name],
        [%t root_type_name], 
        sc_meta_data
-      ) schemaElement = SchemaElement(
-        SObject([%e expressions]), 
-        [%e root_field_module], 
-        [%e root_ui_module],
-        None
-      )
-  ]]
+      ) Schema.t =
+      SObject([%e expressions])
+    ];
+    [%stri
+      let uiSchema: (module(FieldUiSchema with type t = [%t root_type_name])) = [%e root_ui_module]
+    ]
+  ]

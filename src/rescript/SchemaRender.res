@@ -202,6 +202,7 @@ and ObjectRender: ObjectRender = {
           schema,
           field,
           uiSchema,
+          _,
         ),
         i,
       ) => 

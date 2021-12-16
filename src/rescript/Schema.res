@@ -38,4 +38,5 @@ and schemaListItem<'t, 'm> =
       t<'s, 't, 'k, 'm>,
       module(Field with type t = 'k and type r = 't),
       module(FieldUiSchema with type t = 'k),
+      option<'m>
     ): schemaListItem<'t, 'm>
