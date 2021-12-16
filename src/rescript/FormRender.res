@@ -3,7 +3,7 @@ open UiFields
 
 @react.component
 let make = (
-  ~field: schemaElement<obj, 'r, 'k, 'm>,
+  ~field: Schema.t<obj, 'r, 'k, 'm>,
   ~onChange: 'k => unit,
   ~formData: 'k,
   ~fieldTemplate: option<module(FieldTemplate)>=?,

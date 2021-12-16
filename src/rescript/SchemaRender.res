@@ -39,28 +39,56 @@ module type SwitchRender = {
   let make: props<'t, 'r, 'k, 'm> => React.element
 }
 module type ObjectRender = {
-  @react.component
-  let make: (
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
+  }
+  @obj
+  external makeProps: (
     ~formData: 't,
     ~schema: array<schemaListItem<'t, 'm>>,
     ~onChange: 't => unit,
-  ) => React.element
+    unit,
+  ) => props<'t, 'm> = ""
+
+  let make: props<'t, 'm> => React.element
 }
 module type ReRender = {
   type props<'t, 'r, 'k, 'm> = {
     obj: 'r,
-    field: schemaElement<'t, 'r, 'k, 'm>,
+    schema: Schema.t<'t, 'r, 'k, 'm>,
+    field: module(Field with type t = 'k and type r = 'r),
+    uiSchema: module(FieldUiSchema with type t = 'k),
     onChange: 'r => unit,
     key: string,
   }
   @obj
   external makeProps: (
     ~obj: 'r,
-    ~field: schemaElement<'t, 'r, 'k, 'm>,
+    ~schema: Schema.t<'t, 'r, 'k, 'm>,
+    ~field: module(Field with type t = 'k and type r = 'r),
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
     ~onChange: 'r => unit,
     ~key: string,
     unit,
   ) => props<'t, 'r, 'k, 'm> = ""
+  let make: props<'t, 'r, 'k, 'm> => React.element
+}
+module type ArrayRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<arr, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<arr, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
   let make: props<'t, 'r, 'k, 'm> => React.element
 }
 module rec Impl: SchemaRender = {
@@ -138,7 +166,10 @@ and SwitchRender: SwitchRender = {
         <PrimitiveRender
           field=props.field onChange=props.onChange formData=props.formData
         />
-      | SArr(_) => React.string("3")
+      | SArr(_) =>
+        <ArrayRender
+          field=props.field onChange=props.onChange formData=props.formData
+        />
       | _ => React.string("")
       }
 
@@ -150,17 +181,38 @@ and SwitchRender: SwitchRender = {
   let () = React.setDisplayName(make, "SwitchRender")
 }
 and ObjectRender: ObjectRender = {
-  @react.component
-  let make = (
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
+  }
+  @obj
+  external makeProps: (
     ~formData: 't,
     ~schema: array<schemaListItem<'t, 'm>>,
     ~onChange: 't => unit,
-  ) => {
+    unit,
+  ) => props<'t, 'm> = ""
+
+  let make = (type t r k m, props: props<t, m>) => {
     <React.Fragment>
-      {schema
-      |> Js.Array.mapi((SchemaListItem(field), i) =>
-        <ReRender key={Belt.Int.toString(i)} obj=formData field onChange />
-      )
+      {props.schema
+      |> Js.Array.mapi((
+        SchemaListItem(
+          schema,
+          field,
+          uiSchema,
+        ),
+        i,
+      ) => 
+        <ReRender 
+          key={Belt.Int.toString(i)} 
+          obj=props.formData 
+          field
+          schema
+          uiSchema
+          onChange=props.onChange 
+        />)
       |> React.array}
     </React.Fragment>
   }
@@ -169,7 +221,9 @@ and ObjectRender: ObjectRender = {
 and ReRender: ReRender = {
   type props<'t, 'r, 'k, 'm> = {
     obj: 'r,
-    field: schemaElement<'t, 'r, 'k, 'm>,
+    schema: Schema.t<'t, 'r, 'k, 'm>,
+    field: module(Field with type t = 'k and type r = 'r),
+    uiSchema: module(FieldUiSchema with type t = 'k),
     onChange: 'r => unit,
     key: string,
   }
@@ -177,31 +231,55 @@ and ReRender: ReRender = {
   @obj
   external makeProps: (
     ~obj: 'r,
-    ~field: schemaElement<'t, 'r, 'k, 'm>,
+    ~schema: Schema.t<'t, 'r, 'k, 'm>,
+    ~field: module(Field with type t = 'k and type r = 'r),
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
     ~onChange: 'r => unit,
     ~key: string,
     unit,
   ) => props<'t, 'r, 'k, 'm> = ""
 
   let make = (type t r k m, props: props<t, r, k, m>) => {
-    let SchemaElement(
-      schema,
-      module(Field: Field with type t = k and type r = r),
-      uiSchema,
-      _,
-    ) = props.field
+    let module(Field: Field with type t = k and type r = r) = props.field
     let objRef = React.useRef(props.obj)
-    let onChange = React.useCallback0((val: k) =>
+    let onChange = React.useCallback0((val) =>
       val |> Field.set(objRef.current) |> props.onChange
     )
     React.useEffect2(() => {
       objRef.current = props.obj
       None
     }, (props.onChange, props.obj))
-    <Impl uiSchema field=schema onChange formData={Field.get(props.obj)} />
+    <Impl
+      onChange
+      uiSchema=props.uiSchema 
+      field=props.schema
+      formData={Field.get(props.obj)} />
   }
   let () = React.setDisplayName(make, "ReRender")
 }
-module ArrayRender = {
+and ArrayRender: ArrayRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<arr, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<arr, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
 
+  let make = (type t r k m, props: props<t, r, k, m>) => {
+    let SArr(schema, _,) = props.field
+    let mapToElement = Js.Array.mapi((data, i) => {
+      let onChange = upd =>
+        props.formData
+        |> Js.Array.mapi((ci, ii) => ii == i ? upd : ci)
+        |> props.onChange
+      <SwitchRender field=schema onChange formData=data widget=None /> // @TODO should implement
+    })
+    <div> {props.formData |> mapToElement |> React.array} </div>
+  }
 }

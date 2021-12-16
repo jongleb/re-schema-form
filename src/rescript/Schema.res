@@ -20,15 +20,22 @@ type rec primitive<'t> =
 type rec t<'t, 'r, _, 'm> =
   | Primitive(primitive<'t>): t<primitive<'t>, 'r, 't, 'm>
   | SObject(array<schemaListItem<'t, 'm>>): t<obj, 'r, 't, 'm>
-  | SArr(schemaListItem<'t, 'm>): t<arr, 'r, array<'t>, 'm>
-  | SNull(schemaElement<'k, 'r, 't, 'm>): t<nullable, 'r, option<'t>, 'm>
+  | SArr(t<'k, array<'t>, 't, 'm>, module(FieldUiSchema with type t = 't)): t<
+      arr,
+      'r,
+      array<'t>,
+      'm
+    >
+  | SNull(t<'k, option<'t>, 't, 'm>, module(FieldUiSchema with type t = 't)): t<
+      nullable,
+      'r,
+      option<'t>,
+      'm
+    >
 
 and schemaListItem<'t, 'm> =
-  SchemaListItem(schemaElement<'s, 't, 'k, 'm>): schemaListItem<'t, 'm>
-
-and schemaElement<'t, 'r, 'k, 'm> = SchemaElement(
-      t<'t, 'r, 'k, 'm>,
-      module(Field with type t = 'k and type r = 'r),
+  | SchemaListItem(
+      t<'s, 't, 'k, 'm>,
+      module(Field with type t = 'k and type r = 't),
       module(FieldUiSchema with type t = 'k),
-      option<'m>
-)
+    ): schemaListItem<'t, 'm>
