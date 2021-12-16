@@ -25,6 +25,7 @@ let createModule struture_items =
       |> List.append struture_items
       |> List.append (Meta_create.create_if_not_exists struture_items)
       |> List.cons [%stri open Schema]
+      |> List.cons [%stri open UiSchema]
     )
   )
 

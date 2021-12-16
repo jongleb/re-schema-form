@@ -22,6 +22,8 @@ let apply_to_schema_list_item label (fn: (module Create_first_class) -> expressi
       [%e Meta_create.create label]
     )
   ]
+
+let field_not_supported () = Location.raise_errorf "This type field is not supported"   
  
 let pasre_opt_primitive core_type =
   match (core_type) with
@@ -50,41 +52,27 @@ let rec parse_opt_obj ~(rest: structure_item list) core_type =
         )
   | _ -> None
 
-and pasre_array_primitive core_type ~record_name ~rest label =
+and pasre_array_primitive core_type ~record_name ~rest =
   match (core_type) with
-  | ([%type: [%t? t] array]) -> Some([%expr SArr([%e parse_wrapped t ~rest label])])
+  | ([%type: [%t? t] array]) -> begin
+      t 
+       |> parse_opt_as ~record_name ~rest 
+       |> Option.map (fun r -> [%expr SArr([%e r], [%e create_root])]) 
+      (* TODO: Empty ui schema of course it's temporary, fix it in feature as other uischema fields *)
+    end
   | _ -> None
 
-and parse_wrapped core_type ~rest (label: label_declaration) = 
-  core_type 
-  |> pasre_opt_primitive 
-     <|> Lazy.from_fun(fun () -> parse_opt_obj ~rest label.pld_type)
-  |> Option.map (fun r -> 
-      let name = match core_type.ptyp_desc with
-        | Ptyp_constr({txt=Lident(li)}, _) -> li
-        | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *) in 
-      let root_field_module = name |> create_root |> Mod.mk |> Exp.pack in
-      let root_ui_module = name |> Ui_create.create_root |> Mod.mk |> Exp.pack in
-      [%expr 
-        SchemaListItem(
-            [%e r],
-            [%e root_field_module],
-            [%e root_ui_module],
-            None
-        )
-      ]
-    ) |> Option.get
-  
-    
+and parse_opt_as ~(record_name: type_declaration) ~rest core_type = 
+  let array = pasre_array_primitive core_type ~record_name ~rest in
+  let primitive_opt = Lazy.from_fun(fun () -> pasre_opt_primitive core_type) in
+  let obj_opt = Lazy.from_fun(fun () -> parse_opt_obj ~rest core_type) in
+  array <|> primitive_opt <|> obj_opt  
 and parse_type ~(record_name: type_declaration) ~rest (label: label_declaration) = 
   let apply = apply_to_schema_list_item label (create_first_class_module ~record_name label) in
-  let array = pasre_array_primitive label.pld_type ~record_name ~rest label in
-  let primitive_opt = Lazy.from_fun(fun () -> pasre_opt_primitive label.pld_type) in
-  let obj_opt = Lazy.from_fun(fun () -> parse_opt_obj ~rest label.pld_type) in
-  let result = array <|> primitive_opt <|> obj_opt in
+  let result = parse_opt_as ~record_name ~rest label.pld_type in
   match (result) with
   | Some(r) -> apply r
-  | _ -> Location.raise_errorf "This type field is not supported" (* TODO: what? concrete location pls fix *)
+  | _ -> field_not_supported() (* TODO: what? concrete location pls fix *)
 
 and create_field_modules ~(record_name: type_declaration) ~(rest: structure_item list) (labels: Parsetree.label_declaration list) =
   List.map (parse_type ~record_name ~rest) labels
