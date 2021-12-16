@@ -1,14 +1,15 @@
 open Schema
 open UiFields
+open UiSchema
 
 @react.component
 let make = (
-  ~field: Schema.t<obj, 'r, 'k, 'm>,
+  ~schema: Schema.t<obj, 'r, 'k, 'm>,
   ~onChange: 'k => unit,
   ~formData: 'k,
   ~fieldTemplate: option<module(FieldTemplate)>=?,
+  ~uiSchema: module(FieldUiSchema with type t = 'k),
 ) => {
-  let SchemaElement(schema, _, uiSchema, _) = field
   <FieldTemplateContext.Provider value=fieldTemplate>
     <SchemaRender.Impl field=schema onChange formData uiSchema />
   </FieldTemplateContext.Provider>

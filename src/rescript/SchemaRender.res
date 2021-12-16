@@ -194,7 +194,7 @@ and ObjectRender: ObjectRender = {
     unit,
   ) => props<'t, 'm> = ""
 
-  let make = (type t r k m, props: props<t, m>) => {
+  let make = (type t m, props: props<t, m>) => {
     <React.Fragment>
       {props.schema
       |> Js.Array.mapi((
