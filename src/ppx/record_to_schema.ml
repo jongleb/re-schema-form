@@ -52,19 +52,20 @@ let rec parse_opt_obj ~(rest: structure_item list) core_type =
         )
   | _ -> None
 
+and parse_wrapped core_type ~record_name ~rest ~wrap (label: label_declaration) =
+  core_type
+  |> parse_opt_as ~record_name ~rest label
+  |> Option.map (fun r -> 
+    let ui = label |> Ui_create.create_pmod_structure core_type |> Mod.mk in
+    wrap [%expr [%e r], [%e (Exp.mk (Pexp_pack(ui)))]]
+  ) 
+
 and pasre_array_primitive core_type ~record_name ~rest (label: label_declaration) =
   match (core_type) with
-  | ([%type: [%t? t] array]) -> begin
-      t 
-       |> parse_opt_as ~record_name ~rest label
-       |> Option.map (fun r -> 
-          let ui = label |> Ui_create.create_pmod_structure t |> Mod.mk in
-          [%expr SArr([%e r], [%e (Exp.mk (Pexp_pack(ui)))])]
-        ) 
-      (* TODO: not all 
-      recursive levels ui schema of 
-      course it's temporary, fix it in feature as other uischema fields *)
-    end
+  | ([%type: [%t? t] array]) -> 
+    parse_wrapped t ~record_name ~rest ~wrap:(fun i -> [%expr SArr([%e i])]) label
+  | ([%type: [%t? t] option]) -> 
+    parse_wrapped t ~record_name ~rest ~wrap:(fun i -> [%expr SNull([%e i])]) label  
   | _ -> None
 
 and parse_opt_as ~(record_name: type_declaration) ~rest (label: label_declaration) core_type = 

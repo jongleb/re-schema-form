@@ -16,11 +16,17 @@ module TestForm = {
 
   module UserTest = %schema(
     type sc_meta_data = Num(string) | Date(int)
+    type oneMoreType = {
+      someStrangeValue: float
+    }
     type addInfo = {
       fullName: string,
       @sc_meta(Date(123))
       personBirthday: string,
       isPension: bool,
+      maybeString: option<string>,
+      arrayField: array<string>,
+      arrayWithObj: array<oneMoreType>,
     }
     type income = {
       @sc_widget(module(ProofIncomeWidget: Widgets.Widget with type t = float))
@@ -34,7 +40,14 @@ module TestForm = {
 
   open UserTest
 
-  let addInfo = {personBirthday: "22.11.1995", fullName: "Ivanov Ivan Ivanovich", isPension: false}
+  let firstOneMore = {someStrangeValue: 0.}
+  let addInfo = { personBirthday: "22.11.1995"
+    , fullName: "Ivanov Ivan Ivanovich"
+    , isPension: false
+    , maybeString: None
+    , arrayField: ["a", "b"]
+    , arrayWithObj: [firstOneMore]
+  }
   let income = {proofIncome: 100000.5}
   let formData = { addInfo, income }
 

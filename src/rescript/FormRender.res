@@ -11,6 +11,6 @@ let make = (
   ~uiSchema: module(FieldUiSchema with type t = 'k),
 ) => {
   <FieldTemplateContext.Provider value=fieldTemplate>
-    <SchemaRender.Impl field=schema onChange formData uiSchema />
+    <SchemaRender.Impl key="formRenderImpl" field=schema onChange formData uiSchema />
   </FieldTemplateContext.Provider>
 }
