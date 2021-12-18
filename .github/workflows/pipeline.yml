@@ -16,7 +16,7 @@ jobs:
         node_version: [14]
 
     container:
-      image: cichocinski/docker-esy:alpine3.8
+      image: alexfedoseev/alpine-node-yarn-esy:0.0.4
 
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,6 @@ jobs:
         with:
           node-version: ${{ matrix.node_version }}
           
-      - run: npm install -g esy@0.6.0
       - run: esy install
         working-directory: .
 
@@ -50,7 +49,7 @@ jobs:
         with:
           node-version: ${{ matrix.node_version }}
           
-      - run: npm install -g esy@0.6.11
+      - run: npm install -g esy
       - run: esy install
         working-directory: .
 
