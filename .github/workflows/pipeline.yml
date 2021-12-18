@@ -23,8 +23,8 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: ${{ matrix.node_version }}
-          
-      - run: npm install -g esy@0.6.11
+
+      - run: npm install -g esy
       - run: esy install
         working-directory: .
 
