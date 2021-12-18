@@ -1,6 +1,5 @@
 {
     "name": "re-schema-form",
-    "version": "1.0.0",
     "author": "Patcia Gleb <jongleb@yandex.ru>",
     "license": "MIT",
     "esy": {
@@ -13,7 +12,6 @@
     "dependencies": {
       "@esy-ocaml/reason": ">= 3.6.0 < 4.0.0",
       "@opam/dune": ">=2.6",
-      "@opam/ocaml-lsp-server": "1.4.0",
       "@opam/ocaml-migrate-parsetree": "1.7.3",
       "@opam/ppx_tools_versioned": "5.4.0",
       "@opam/ppxlib": "*",
@@ -22,6 +20,7 @@
       "ocaml": "4.10.0"
     },
     "devDependencies": {
+      "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
       "@opam/merlin": "*",
       "@reason-native/rely": "*",
       "refmterr": "*",
