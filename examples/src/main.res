@@ -1,39 +1,42 @@
 module TestForm = {
 
-  module AgeWidget = {
-    type t = int
+  module ProofIncomeWidget = {
+    type t = float
     
     @react.component
-    let make = (~value: int, ~onChange: int => unit) => {
+    let make = (~value: float, ~onChange: float => unit) => {
       let onChange = React.useCallback1(
         e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange,
         [onChange],
       )
-      <input style={ReactDOM.Style.make(~color="#71bc78", ~fontSize="28px", ())} value=Belt_Int.toString(value) type_="number" onChange />
+      <input style={ReactDOM.Style.make(~color="#71bc78", ~fontSize="50px", ())} value=Belt_Float.toString(value) type_="number" onChange />
     }
     React.setDisplayName(make, "AgeWidget")
   }
 
   module UserTest = %schema(
-    type sc_meta_data = { r: int }
-    type fullName = {
-      name: string,
+    type sc_meta_data = Num(string) | Date(int)
+    type addInfo = {
+      fullName: string,
+      @sc_meta(Date(123))
+      personBirthday: string,
+      isPension: bool,
     }
-    type user = {
-      fullName,
-      @sc_widget(module(AgeWidget: Widgets.Widget with type t = int))
-      @sc_meta({r: 2})
-      age: int,
-      height: float,
-      isTest: bool,
-      test2: array<int>
+    type income = {
+      @sc_widget(module(ProofIncomeWidget: Widgets.Widget with type t = float))
+      proofIncome: float
+    }
+    type formData = {
+      addInfo,
+      income,
     }
   )
 
   open UserTest
 
-  let fullName = {name: ""}
-  let formData = { fullName, age: 23, height: 185.5, isTest: false, test2: [2,34] }
+  let addInfo = {personBirthday: "22.11.1995", fullName: "Ivanov Ivan Ivanovich", isPension: false}
+  let income = {proofIncome: 100000.5}
+  let formData = { addInfo, income }
 
   @react.component
   let make = () => {

@@ -6,10 +6,9 @@ open Parsetree
 open Ast_helper
 open Record_to_schema
 
-
 let create_structure_schema items = items
                                     |> List.rev
-                                    |> List.find_map ( fun {pstr_desc} -> 
+                                    |> List.find_map ( fun {pstr_desc} ->
                                         match pstr_desc with
                                         | Pstr_type(_, [d]) -> Some(d)
                                         | _ -> None
