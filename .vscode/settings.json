@@ -1,0 +1,9 @@
+{
+    "ocaml.sandbox": {
+        "kind": "esy",
+        "root": "${workspaceFolder:ppx-examples}"
+    },
+    "[rescript]": {
+        "editor.defaultFormatter": "chenglou92.rescript-vscode"
+    }
+}

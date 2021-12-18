@@ -1,540 +1,314 @@
-module type FieldRender = {
-  type t
-  @react.component
-  let make: (~value: t, ~onChange: t => unit) => React.element
-}
+open Schema
+open UiSchema
+open UiFields
+open Widgets
 
-module type FieldWrapRender = {
-  type t
-  @react.component
-  let make: (~meta: t, ~children: React.element) => React.element
-}
-
-module rec Schema_object: {
-  type rec schema_number<'t> =
-    | Schema_number_int: schema_number<int>
-    | Schema_number_float: schema_number<float>
-
-  type rec schema<'t, 'field, 'm> =
-    | Schema_string('field): schema<string, 'field, 'm>
-    | Schema_number('field, schema_number<'t>): schema<'t, 'field, 'm>
-    | Schema_boolean('field): schema<bool, 'field, 'm>
-    | Schema_object(
-        (
-          'field,
-          module(Schema_object.Schema_config with type t = 't and type m = 'm),
-        ),
-      ): schema<'t, 'field, 'm>
-
-  module type Object = {
-    type t
-    type m
-    type field<_>
-
-    type rec field_wrap =
-      | Mk_field(schema<'a, field<'a>, m>, m): field_wrap
-      | Mk_nullable_field(schema<'a, field<option<'a>>, m>, m): field_wrap
-      | Mk_array_field(schema<'a, field<array<'a>>, m>, m): field_wrap
-
-    let schema: array<field_wrap>
-    let get: (t, field<'a>) => 'a
-    let set: (t, field<'a>, 'a) => t
+module type SchemaRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<'t, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+    uiSchema: module(FieldUiSchema with type t = 'k),
+    key: string,
   }
 
-  module type Schema_config = {
-    include Object
+  @obj
+  external makeProps: (
+    ~field: Schema.t<'t, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
+    ~key: string,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
 
-    type rec field_render =
-      | Mk_field_render(
-          (field<'a>, module(FieldRender with type t = 'a)),
-        ): field_render
-
-    let get_field_render: field<'a> => option<
-      module(FieldRender with type t = 'a),
-    >
-  }
-} = Schema_object
-
-open Schema_object
-
-module TextInputDefaultRender = {
-  type t = string
-  @react.component
-  let make = (~value: t, ~onChange: string => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
-    <input type_="text" value onChange />
-  }
+  let make: props<'t, 'r, 'k, 'm> => React.element
 }
+module type SwitchRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<'t, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+    widget: option<module(Widgets.Widget with type t = 'k)>,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<'t, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    ~widget: option<module(Widgets.Widget with type t = 'k)>,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+  let make: props<'t, 'r, 'k, 'm> => React.element
+}
+module type ObjectRender = {
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
+  }
+  @obj
+  external makeProps: (
+    ~formData: 't,
+    ~schema: array<schemaListItem<'t, 'm>>,
+    ~onChange: 't => unit,
+    unit,
+  ) => props<'t, 'm> = ""
 
-module ArrayTextInputDefaultRender = {
-  type t = array<string>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) =>
-      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
-    let mapped = Array.mapi((i, ii) => {
-      let onChange = e => {
-        let val = ReactEvent.Form.target(e)["value"]
-        onChange(i, val)
+  let make: props<'t, 'm> => React.element
+}
+module type ReRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    obj: 'r,
+    schema: Schema.t<'t, 'r, 'k, 'm>,
+    field: module(Field with type t = 'k and type r = 'r),
+    uiSchema: module(FieldUiSchema with type t = 'k),
+    onChange: 'r => unit,
+    key: string,
+  }
+  @obj
+  external makeProps: (
+    ~obj: 'r,
+    ~schema: Schema.t<'t, 'r, 'k, 'm>,
+    ~field: module(Field with type t = 'k and type r = 'r),
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
+    ~onChange: 'r => unit,
+    ~key: string,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+  let make: props<'t, 'r, 'k, 'm> => React.element
+}
+module type ArrayRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<arr, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<arr, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make: props<'t, 'r, 'k, 'm> => React.element
+}
+module type NullableRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<nullable, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<nullable, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make: props<'t, 'r, 'k, 'm> => React.element
+}
+module rec Impl: SchemaRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<'t, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+    uiSchema: module(FieldUiSchema with type t = 'k),
+    key: string,
+  }
+
+  @obj
+  external makeProps: (
+    ~field: Schema.t<'t, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
+    ~key: string,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make:
+    type t r k m. React.component<props<t, r, k, m>> =
+    (props: props<t, r, k, m>) => {
+      let module(UiSchema: FieldUiSchema with type t = k) = props.uiSchema
+      let fieldTemplateContext = React.useContext(FieldTemplateContext.context)
+      let switchRender =
+        <SwitchRender
+          field=props.field onChange=props.onChange formData=props.formData widget=UiSchema.widget
+        />
+      let withUiField = switch UiSchema.field {
+      | Some(module(UiField: UiField with type t = k)) =>
+        <UiField value=props.formData onChange=props.onChange> {switchRender} </UiField>
+      | _ => switchRender
       }
-      <input type_="text" value=ii onChange />
-    })
-    value |> mapped |> React.array
-  }
-}
-
-module ArrayNumberIntInputDefaultRender = {
-  type t = array<int>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) =>
-      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
-    let mapped = Array.mapi((i, ii) => {
-      let onChange = e => {
-        let val = ReactEvent.Form.target(e)["valueAsNumber"]
-        onChange(i, val)
+      switch fieldTemplateContext {
+      | Some(module(Field)) =>
+        <Field value=props.formData onChange=props.onChange> {withUiField} </Field>
+      | _ => withUiField
       }
-      <input type_="number" value={Belt.Int.toString(ii)} onChange />
-    })
-    value |> mapped |> React.array
-  }
-}
-
-module ArrayNumberFloatInputDefaultRender = {
-  type t = array<float>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) =>
-      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
-    let mapped = Array.mapi((i, ii) => {
-      let onChange = e => {
-        let val = ReactEvent.Form.target(e)["valueAsNumber"]
-        onChange(i, val)
-      }
-      <input type_="number" value={Belt.Float.toString(ii)} onChange />
-    })
-    value |> mapped |> React.array
-  }
-}
-
-module ArrayBoolInputDefaultRender = {
-  type t = array<bool>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = (i, v) =>
-      value |> Array.mapi((ci, ii) => ci == i ? v : ii) |> onChange
-    let mapped = Array.mapi((i, ii) => {
-      let onChange = e => {
-        let val = ReactEvent.Form.target(e)["checked"]
-        onChange(i, val)
-      }
-      <input type_="checkbox" checked=ii onChange />
-    })
-    value |> mapped |> React.array
-  }
-}
-
-module OptionTextInputDefaultRender = {
-  type t = option<string>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["value"] |> onChange
-    <input
-      type_="text" value={Belt.Option.getWithDefault(value, "")} onChange
-    />
-  }
-}
-
-module OptionNumberIntInputDefaultRender = {
-  type t = option<int>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
-    let inputValue = switch value {
-    | Some(v) => Belt.Int.toString(v)
-    | _ => ""
     }
-    <input type_="number" value=inputValue onChange />
-  }
+  let () = React.setDisplayName(make, "SchemaRender")
 }
+and SwitchRender: SwitchRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<'t, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+    widget: option<module(Widgets.Widget with type t = 'k)>,
+  }
 
-module OptionNumberFloatInputDefaultRender = {
-  type t = option<float>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
-    let inputValue = switch value {
-    | Some(v) => Belt.Float.toString(v)
-    | _ => ""
+  @obj
+  external makeProps: (
+    ~field: Schema.t<'t, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    ~widget: option<module(Widgets.Widget with type t = 'k)>,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make:
+    type t r k m. props<t, r, k, m> => React.element =
+    (props: props<t, r, k, m>) => {
+      let defaultWidget = switch props.field {
+      | SObject(arr) => <ObjectRender formData=props.formData schema=arr onChange=props.onChange />
+      | Primitive(_) =>
+        <PrimitiveRender field=props.field onChange=props.onChange formData=props.formData />
+      | SArr(_) => <ArrayRender field=props.field onChange=props.onChange formData=props.formData />
+      | SNull(_) =>
+        <NullableRender field=props.field onChange=props.onChange formData=props.formData />
+      }
+
+      props.widget->Belt.Option.mapWithDefault(defaultWidget, (
+        module(ComponentWidget: Widgets.Widget with type t = k),
+      ) => <ComponentWidget onChange=props.onChange value=props.formData />)
     }
-    <input type_="number" value=inputValue onChange />
-  }
-}
 
-module NumberIntInputDefaultRender = {
-  type t = int
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
-    <input type_="number" value={Belt.Int.toString(value)} onChange />
-  }
+  let () = React.setDisplayName(make, "SwitchRender")
 }
-
-module NumberFloatInputDefaultRender = {
-  type t = float
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange
-    <input type_="number" value={Belt.Float.toString(value)} onChange />
+and ObjectRender: ObjectRender = {
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
   }
-}
+  @obj
+  external makeProps: (
+    ~formData: 't,
+    ~schema: array<schemaListItem<'t, 'm>>,
+    ~onChange: 't => unit,
+    unit,
+  ) => props<'t, 'm> = ""
 
-module BoolInputDefaultRender = {
-  type t = bool
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["checked"] |> onChange
-    <input type_="checkbox" checked=value onChange />
+  let make = (type t m, props: props<t, m>) => {
+    <React.Fragment>
+      {props.schema
+      |> Js.Array.mapi((SchemaListItem(schema, field, uiSchema, _), i) =>
+        <ReRender
+          key={Belt.Int.toString(i)}
+          obj=props.formData
+          field
+          schema
+          uiSchema
+          onChange=props.onChange
+        />
+      )
+      |> React.array}
+    </React.Fragment>
   }
+  let () = React.setDisplayName(make, "ObjectRender")
 }
+and ReRender: ReRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    obj: 'r,
+    schema: Schema.t<'t, 'r, 'k, 'm>,
+    field: module(Field with type t = 'k and type r = 'r),
+    uiSchema: module(FieldUiSchema with type t = 'k),
+    onChange: 'r => unit,
+    key: string,
+  }
 
-module OptionBoolInputDefaultRender = {
-  type t = option<bool>
-  @react.component
-  let make = (~value: t, ~onChange: t => unit) => {
-    let onChange = e => ReactEvent.Form.target(e)["checked"] |> onChange
-    <input
-      type_="checkbox"
-      checked={Belt.Option.getWithDefault(value, false)}
+  @obj
+  external makeProps: (
+    ~obj: 'r,
+    ~schema: Schema.t<'t, 'r, 'k, 'm>,
+    ~field: module(Field with type t = 'k and type r = 'r),
+    ~uiSchema: module(FieldUiSchema with type t = 'k),
+    ~onChange: 'r => unit,
+    ~key: string,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make = (type t r k m, props: props<t, r, k, m>) => {
+    let module(Field: Field with type t = k and type r = r) = props.field
+    let objRef = React.useRef(props.obj)
+    let onChange = React.useCallback0(val => val |> Field.set(objRef.current) |> props.onChange)
+    React.useEffect2(() => {
+      objRef.current = props.obj
+      None
+    }, (props.onChange, props.obj))
+    <Impl
+      key="rerenderImpl"
       onChange
+      uiSchema=props.uiSchema
+      field=props.schema
+      formData={Field.get(props.obj)}
     />
+  }
+  let () = React.setDisplayName(make, "ReRender")
+}
+and ArrayRender: ArrayRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<arr, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
+  }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<arr, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
+
+  let make = (type t r k m, props: props<t, r, k, m>) => {
+    let SArr(schema, uiSchema) = props.field
+    let mapToElement = Js.Array.mapi((data, i) => {
+      let onChange = upd =>
+        props.formData |> Js.Array.mapi((ci, ii) => ii == i ? upd : ci) |> props.onChange
+      <Impl key={Belt_Int.toString(i)} field=schema onChange formData=data uiSchema />
+    })
+    <div> {props.formData |> mapToElement |> React.array} </div>
   }
 }
 
-type rec render_number_field<_> =
-  | NumberIntRender: render_number_field<int>
-  | NumberFloatRender: render_number_field<float>
-
-type rec render_field<'t> =
-  | NumberRender(render_number_field<'t>): render_field<'t>
-  | TextRender: render_field<string>
-  | BoolRender: render_field<bool>
-  | OptionTextRender: render_field<option<string>>
-  | OptionNumberRender(render_number_field<'t>): render_field<option<'t>>
-  | OptionBoolRender: render_field<option<bool>>
-  | ArrayTextRender: render_field<array<string>>
-  | ArrayNumberRender(render_number_field<'t>): render_field<array<'t>>
-  | ArrayBoolRender: render_field<array<bool>>
-
-type common_field_wrap =
-  | FieldWrap
-  | NullableFieldWrap
-  | ArrayFieldWrap
-  | ObjectFieldWrap
-
-type field_wrappers<'m> = array<(
-  common_field_wrap,
-  module(FieldWrapRender with type t = 'm),
-)>
-
-type rec render_field_wrap =
-  | MkRenderFieldByType(
-      render_field<'a>,
-      module(FieldRender with type t = 'a),
-    ): render_field_wrap
-
-type renders = list<render_field_wrap>
-
-type rec eq<_, _> = Eq: eq<'a, 'a>
-
-let schema_render:
-  type a b. (
-    ~renders: renders,
-    ~field_wrappers: field_wrappers<b>,
-    ~onChange: a => unit,
-    a,
-    module(Schema_config with type t = a and type m = b),
-  ) => React.element =
-  (~renders, ~field_wrappers, ~onChange, form_data, schema) => {
-    let rec iterate_schema_render:
-      type a. (
-        ~onChange: a => unit,
-        a,
-        module(Schema_config with type t = a and type m = b),
-      ) => React.element =
-      (
-        ~onChange,
-        form_data: a,
-        module(Schema: Schema_config with type t = a and type m = b),
-      ) => {
-        let handle_object_field:
-          type f. (
-            (
-              Schema.field<f>,
-              module(Schema_config with type t = f and type m = b),
-            )
-          ) => React.element =
-          ((field, m)) => {
-            let next_data = Schema.get(form_data, field)
-            let next_on_change = upd =>
-              onChange(Schema.set(form_data, field, upd))
-            iterate_schema_render(next_data, m, ~onChange=next_on_change)
-          }
-        let getSchemaRenderComponent:
-          type t. (
-            ~defaultRender: module(FieldRender with type t = t),
-            ~renderField: render_field<t>,
-            ~schemaField: Schema.field<t>,
-          ) => module(FieldRender with type t = t) =
-          (~defaultRender, ~renderField, ~schemaField) => {
-            let concrete_field: option<
-              module(FieldRender with type t = t),
-            > = Schema.get_field_render(schemaField)
-            let rec loop = l =>
-              switch l {
-              | list{} => defaultRender
-              | list{MkRenderFieldByType(t, c), ...xs} => {
-                  let result: option<
-                    module(FieldRender with type t = t),
-                  > = switch (t, renderField) {
-                  | (TextRender, TextRender) => Some(c)
-                  | (
-                      NumberRender(NumberIntRender),
-                      NumberRender(NumberIntRender),
-                    ) =>
-                    Some(c)
-                  | (
-                      NumberRender(NumberFloatRender),
-                      NumberRender(NumberFloatRender),
-                    ) =>
-                    Some(c)
-                  | (BoolRender, BoolRender) => Some(c)
-                  | (OptionBoolRender, OptionBoolRender) => Some(c)
-                  | (
-                      OptionNumberRender(NumberIntRender),
-                      OptionNumberRender(NumberIntRender),
-                    ) =>
-                    Some(c)
-                  | (
-                      OptionNumberRender(NumberFloatRender),
-                      OptionNumberRender(NumberFloatRender),
-                    ) =>
-                    Some(c)
-                  | (OptionTextRender, OptionTextRender) => Some(c)
-                  | _ => None
-                  }
-                  switch (concrete_field, result) {
-                  | (Some(c), _) => c
-                  | (_, Some(c)) => c
-                  | _ => loop(xs)
-                  }
-                }
-              }
-            loop(renders)
-          }
-
-        let getFieldRender: (
-          ~resolve: common_field_wrap,
-          ~meta: b,
-          ~children: React.element,
-        ) => React.element = (~resolve, ~meta, ~children) => {
-          let option_field_wrapper = Belt.Array.getBy(field_wrappers, ((
-            w,
-            _,
-          )) => w == resolve)
-          switch option_field_wrapper {
-          | Some((
-              _,
-              module(FieldWrapResolved: FieldWrapRender with type t = b),
-            )) =>
-            <FieldWrapResolved meta> {children} </FieldWrapResolved>
-          | _ => children
-          }
-        }
-
-        let getSchemaRender:
-          type t. (
-            ~value: t,
-            ~defaultRender: module(FieldRender with type t = t),
-            ~onChange: t => unit,
-            ~renderField: render_field<t>,
-            ~schemaField: Schema.field<t>,
-            ~resolve: common_field_wrap,
-            ~meta: b,
-          ) => React.element =
-          (
-            ~value,
-            ~defaultRender,
-            ~onChange,
-            ~renderField,
-            ~schemaField,
-            ~resolve,
-            ~meta,
-          ) => {
-            let module(Component: FieldRender with
-              type t = t
-            ) = getSchemaRenderComponent(
-              ~defaultRender,
-              ~renderField,
-              ~schemaField,
-            )
-            let children = <Component onChange value />
-            getFieldRender(~resolve, ~meta, ~children)
-          }
-        let createSchemaField:
-          type t. (
-            ~schemaField: Schema.field<t>,
-            ~defaultRender: module(FieldRender with type t = t),
-            ~renderField: render_field<t>,
-            ~resolve: common_field_wrap,
-            ~meta: b,
-          ) => React.element =
-          (~schemaField, ~defaultRender, ~renderField, ~resolve, ~meta) => {
-            let value = Schema.get(form_data, schemaField)
-            let onChange = e =>
-              Schema.set(form_data, schemaField, e) |> onChange
-            getSchemaRender(
-              ~value,
-              ~onChange,
-              ~defaultRender,
-              ~renderField,
-              ~schemaField,
-              ~resolve,
-              ~meta,
-            )
-          }
-
-        let handle_item = i =>
-          switch i {
-          | Schema.Mk_field(Schema_string(s), meta) =>
-            createSchemaField(
-              ~schemaField=s,
-              ~defaultRender=module(TextInputDefaultRender),
-              ~renderField=TextRender,
-              ~resolve=FieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_nullable_field(Schema_string(s), meta) =>
-            createSchemaField(
-              ~schemaField=s,
-              ~defaultRender=module(OptionTextInputDefaultRender),
-              ~renderField=OptionTextRender,
-              ~resolve=NullableFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_array_field(Schema_string(s), meta) =>
-            createSchemaField(
-              ~schemaField=s,
-              ~defaultRender=module(ArrayTextInputDefaultRender),
-              ~renderField=ArrayTextRender,
-              ~resolve=ArrayFieldWrap,
-              ~meta,
-            )
-
-          | Schema.Mk_field(Schema_number(n, Schema_number_int), meta) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(NumberIntInputDefaultRender),
-              ~renderField=NumberRender(NumberIntRender),
-              ~resolve=FieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_nullable_field(
-              Schema_number(n, Schema_number_int),
-              meta,
-            ) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(OptionNumberIntInputDefaultRender),
-              ~renderField=OptionNumberRender(NumberIntRender),
-              ~resolve=NullableFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_array_field(Schema_number(n, Schema_number_int), meta) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(ArrayNumberIntInputDefaultRender),
-              ~renderField=ArrayNumberRender(NumberIntRender),
-              ~resolve=ArrayFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_field(Schema_number(n, Schema_number_float), meta) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(NumberFloatInputDefaultRender),
-              ~renderField=NumberRender(NumberFloatRender),
-              ~resolve=FieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_nullable_field(
-              Schema_number(n, Schema_number_float),
-              meta,
-            ) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(OptionNumberFloatInputDefaultRender),
-              ~renderField=OptionNumberRender(NumberFloatRender),
-              ~resolve=NullableFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_array_field(
-              Schema_number(n, Schema_number_float),
-              meta,
-            ) =>
-            createSchemaField(
-              ~schemaField=n,
-              ~defaultRender=module(ArrayNumberFloatInputDefaultRender),
-              ~renderField=ArrayNumberRender(NumberFloatRender),
-              ~resolve=ArrayFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_field(Schema_boolean(b), meta) =>
-            createSchemaField(
-              ~schemaField=b,
-              ~defaultRender=module(BoolInputDefaultRender),
-              ~renderField=BoolRender,
-              ~resolve=FieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_nullable_field(Schema_boolean(b), meta) =>
-            createSchemaField(
-              ~schemaField=b,
-              ~defaultRender=module(OptionBoolInputDefaultRender),
-              ~renderField=OptionBoolRender,
-              ~resolve=NullableFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_array_field(Schema_boolean(b), meta) =>
-            createSchemaField(
-              ~schemaField=b,
-              ~defaultRender=module(ArrayBoolInputDefaultRender),
-              ~renderField=ArrayBoolRender,
-              ~resolve=ArrayFieldWrap,
-              ~meta,
-            )
-          | Schema.Mk_nullable_field(Schema_object(_), _) => React.null
-          | Schema.Mk_array_field(Schema_object(_), _) => React.null
-          | Schema.Mk_field(Schema_object(o), meta) => {
-              let children = handle_object_field(o)
-              getFieldRender(~resolve=ObjectFieldWrap, ~meta, ~children)
-            }
-          }
-        let items = Belt.Array.mapWithIndex(Schema.schema, (i, ii) => {
-          <div key={Belt.Int.toString(i)}> {handle_item(ii)} </div>
-        })
-        <div> {React.array(items)} </div>
-      }
-    iterate_schema_render(~onChange, form_data, schema)
+and NullableRender: NullableRender = {
+  type props<'t, 'r, 'k, 'm> = {
+    field: Schema.t<nullable, 'r, 'k, 'm>,
+    onChange: 'k => unit,
+    formData: 'k,
   }
+  @obj
+  external makeProps: (
+    ~field: Schema.t<nullable, 'r, 'k, 'm>,
+    ~onChange: 'k => unit,
+    ~formData: 'k,
+    unit,
+  ) => props<'t, 'r, 'k, 'm> = ""
 
-@react.component
-let make = (
-  ~schema: module(Schema_config with type t = 'a and type m = 'b),
-  ~form_data: 'a,
-  ~onChange: 'a => unit,
-  ~renders: renders,
-  ~field_wrappers: field_wrappers<'b>,
-) =>
-  <div>
-    {schema_render(form_data, schema, ~renders, ~onChange, ~field_wrappers)}
-  </div>
+  let make = (type t r k m, props: props<t, r, k, m>) => {
+    let SNull(schema, uiSchema) = props.field
+    let onChange = e => props.onChange(Some(e))
+    switch props.formData {
+    | Some(data) => <Impl key="nullableImpl" field=schema onChange formData=data uiSchema />
+    | _ =>
+      switch schema {
+      | Primitive(SString) => <StringWidget value="" onChange />
+      | Primitive(SBool) => <BoolWidget value=false onChange />
+      | Primitive(_) => <NumberWidget value="" onChange />
+      | _ => React.null
+      }
+    }
+  }
+}

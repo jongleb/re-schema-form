@@ -8,8 +8,8 @@
     "-bs-super-errors",
     "-bs-no-version-header"
   ],
-  "ppx-flags": ["re-schema-form/ppx"],
-  "sources": ["src"],
+  "ppx-flags": ["../_build/default/src/bin/bin.exe"],
+  "sources": ["src", "../src/rescript"],
   "package-specs": [
     {
       "module": "es6",
@@ -17,8 +17,7 @@
     }
   ],
   "bs-dependencies": [
-    "@rescript/react",
-    "re-schema-form"
+    "@rescript/react"
   ],
   "bs-dev-dependencies": []
 }
