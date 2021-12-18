@@ -136,23 +136,16 @@ module rec Impl: SchemaRender = {
       let fieldTemplateContext = React.useContext(FieldTemplateContext.context)
       let switchRender =
         <SwitchRender
-          field=props.field
-          onChange=props.onChange
-          formData=props.formData
-          widget=UiSchema.widget
+          field=props.field onChange=props.onChange formData=props.formData widget=UiSchema.widget
         />
       let withUiField = switch UiSchema.field {
       | Some(module(UiField: UiField with type t = k)) =>
-        <UiField value=props.formData onChange=props.onChange>
-          {switchRender}
-        </UiField>
+        <UiField value=props.formData onChange=props.onChange> {switchRender} </UiField>
       | _ => switchRender
       }
       switch fieldTemplateContext {
       | Some(module(Field)) =>
-        <Field value=props.formData onChange=props.onChange>
-          {withUiField}
-        </Field>
+        <Field value=props.formData onChange=props.onChange> {withUiField} </Field>
       | _ => withUiField
       }
     }
@@ -179,22 +172,12 @@ and SwitchRender: SwitchRender = {
     type t r k m. props<t, r, k, m> => React.element =
     (props: props<t, r, k, m>) => {
       let defaultWidget = switch props.field {
-      | SObject(arr) =>
-        <ObjectRender
-          formData=props.formData schema=arr onChange=props.onChange
-        />
+      | SObject(arr) => <ObjectRender formData=props.formData schema=arr onChange=props.onChange />
       | Primitive(_) =>
-        <PrimitiveRender
-          field=props.field onChange=props.onChange formData=props.formData
-        />
-      | SArr(_) =>
-        <ArrayRender
-          field=props.field onChange=props.onChange formData=props.formData
-        />
+        <PrimitiveRender field=props.field onChange=props.onChange formData=props.formData />
+      | SArr(_) => <ArrayRender field=props.field onChange=props.onChange formData=props.formData />
       | SNull(_) =>
-        <NullableRender
-          field=props.field onChange=props.onChange formData=props.formData
-        />
+        <NullableRender field=props.field onChange=props.onChange formData=props.formData />
       }
 
       props.widget->Belt.Option.mapWithDefault(defaultWidget, (
@@ -260,9 +243,7 @@ and ReRender: ReRender = {
   let make = (type t r k m, props: props<t, r, k, m>) => {
     let module(Field: Field with type t = k and type r = r) = props.field
     let objRef = React.useRef(props.obj)
-    let onChange = React.useCallback0(val =>
-      val |> Field.set(objRef.current) |> props.onChange
-    )
+    let onChange = React.useCallback0(val => val |> Field.set(objRef.current) |> props.onChange)
     React.useEffect2(() => {
       objRef.current = props.obj
       None
@@ -295,12 +276,8 @@ and ArrayRender: ArrayRender = {
     let SArr(schema, uiSchema) = props.field
     let mapToElement = Js.Array.mapi((data, i) => {
       let onChange = upd =>
-        props.formData
-        |> Js.Array.mapi((ci, ii) => ii == i ? upd : ci)
-        |> props.onChange
-      <Impl
-        key={Belt_Int.toString(i)} field=schema onChange formData=data uiSchema
-      />
+        props.formData |> Js.Array.mapi((ci, ii) => ii == i ? upd : ci) |> props.onChange
+      <Impl key={Belt_Int.toString(i)} field=schema onChange formData=data uiSchema />
     })
     <div> {props.formData |> mapToElement |> React.array} </div>
   }
@@ -324,8 +301,7 @@ and NullableRender: NullableRender = {
     let SNull(schema, uiSchema) = props.field
     let onChange = e => props.onChange(Some(e))
     switch props.formData {
-    | Some(data) =>
-      <Impl key="nullableImpl" field=schema onChange formData=data uiSchema />
+    | Some(data) => <Impl key="nullableImpl" field=schema onChange formData=data uiSchema />
     | _ =>
       switch schema {
       | Primitive(SString) => <StringWidget value="" onChange />

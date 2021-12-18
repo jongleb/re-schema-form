@@ -24,13 +24,13 @@ type rec t<'t, 'r, _, 'm> =
       arr,
       'r,
       array<'t>,
-      'm
+      'm,
     >
   | SNull(t<'k, option<'t>, 't, 'm>, module(FieldUiSchema with type t = 't)): t<
       nullable,
       'r,
       option<'t>,
-      'm
+      'm,
     >
 
 and schemaListItem<'t, 'm> =
@@ -38,5 +38,5 @@ and schemaListItem<'t, 'm> =
       t<'s, 't, 'k, 'm>,
       module(Field with type t = 'k and type r = 't),
       module(FieldUiSchema with type t = 'k),
-      option<'m>
+      option<'m>,
     ): schemaListItem<'t, 'm>
