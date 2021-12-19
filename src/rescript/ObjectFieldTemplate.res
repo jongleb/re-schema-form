@@ -12,12 +12,8 @@ module type ObjectFieldTemplate = {
 
 module DefaultObjectFieldTemplate = {
   @react.component
-  let make = (
-    ~formData as _,
-    ~schema as _,
-    ~onChange as _,
-    ~content: array<React.element>,
-  ) => <div> {React.array(content)} </div>
+  let make = (~formData as _, ~schema as _, ~onChange as _, ~content: array<React.element>) =>
+    <div> {React.array(content)} </div>
 }
 
 module ObjectFieldTemplateContext = {
