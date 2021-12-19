@@ -2,6 +2,7 @@ open Schema
 open UiSchema
 open UiFields
 open Widgets
+open ObjectFieldTemplate
 
 module type SchemaRender = {
   type props<'t, 'r, 'k, 'm> = {
@@ -202,9 +203,9 @@ and ObjectRender: ObjectRender = {
   ) => props<'t, 'm> = ""
 
   let make = (type t m, props: props<t, m>) => {
-    <React.Fragment>
-      {props.schema
-      |> Js.Array.mapi((SchemaListItem(schema, field, uiSchema, _), i) =>
+    let module(Template: ObjectFieldTemplate) = React.useContext(ObjectFieldTemplateContext.context)
+    let content = Js.Array.mapi(
+      (SchemaListItem(schema, field, uiSchema, _), i) =>
         <ReRender
           key={Belt.Int.toString(i)}
           obj=props.formData
@@ -212,10 +213,10 @@ and ObjectRender: ObjectRender = {
           schema
           uiSchema
           onChange=props.onChange
-        />
-      )
-      |> React.array}
-    </React.Fragment>
+        />,
+      props.schema,
+    )
+    <Template content formData=props.formData schema=props.schema onChange=props.onChange />
   }
   let () = React.setDisplayName(make, "ObjectRender")
 }
