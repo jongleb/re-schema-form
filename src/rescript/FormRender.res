@@ -2,6 +2,7 @@ open Schema
 open UiFields
 open UiSchema
 open ObjectFieldTemplate
+open MutualImpls
 
 @react.component
 let make = (
@@ -12,7 +13,7 @@ let make = (
   ~objectFieldTemplate: option<module(ObjectFieldTemplate)>=?,
   ~uiSchema: module(FieldUiSchema with type t = 'k),
 ) => {
-  let content = <SchemaRender.Impl key="formRenderImpl" field=schema onChange formData uiSchema />
+  let content = <SchemaRenderImpl key="formRenderImpl" field=schema onChange formData uiSchema />
   <FieldTemplateContext.Provider value=fieldTemplate>
     {switch objectFieldTemplate {
     | Some(value) =>
