@@ -1,7 +1,13 @@
+open Migrate_parsetree
+open Ast_helper
 let (<|>) a b =
   match (a, b) with
   | (Some(x), _) -> a
   | (_, lazy(y)) -> y
+
+let get_type txt = Typ.mk(Ptyp_constr({ loc = Location.none; txt = Lident(txt)}, []))  
+
+let fpat_constraint = Fun.flip (Pat.constraint_)
 
 let get_attribute_or ~name label or_case needed_case = 
   let open Ppxlib.Ast_pattern in 
