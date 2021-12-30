@@ -1,8 +1,7 @@
 module TestForm = {
-
   // module ProofIncomeWidget = {
   //   type t = float
-    
+
   //   @react.component
   //   let make = (~value: float, ~onChange: float => unit) => {
   //     let onChange = React.useCallback1(
@@ -51,41 +50,61 @@ module TestForm = {
   // let income = {proofIncome: 100000.5}
   // let formData = { addInfo, income }
 
-
   module SimpleFormSchema = %schema(
     type names = {
       middleName: string,
       name: string,
     }
-    type flags = {
-      isLoveCats: bool
+    type flags = {isLoveCats: bool}
+    type contact = {
+      names: names,
+      phone: string,
+    }
+    type greenCard = {
+      names: names,
+      id: int,
+      photoLink: string,
     }
     type user = {
-      names,
+      names: names,
       age: int,
-      flags
+      flags: flags,
+      phoneContacts: array<contact>,
+      greenCard: option<greenCard>,
     }
   )
 
   open SimpleFormSchema
 
-  let names = { middleName: "Some", name: "User" }
-  let flags = { isLoveCats: true } // of course! who doesn't love them
-  let formData = { names, age: 41, flags }
+  let names = {middleName: "Some", name: "User"}
+  let greenCard = {
+    names: names,
+    id: 1234567,
+    photoLink: "https://play-lh.googleusercontent.com/6UgEjh8Xuts4nwdWzTnWH8QtLuHqRMUB7dp24JYVE2xcYzq4HA8hFfcAbU-R-PC_9uA1",
+  }
+  let phoneContactName = {middleName: "Best", name: "Friend"} // Well, how can it be without him?
+  let firstPhoneContact = {names: phoneContactName, phone: "123456789"}
+  let phoneContacts = [firstPhoneContact]
+  let flags = {isLoveCats: true} // of course! who doesn't love them
+  let formData = {
+    names: names,
+    age: 41,
+    flags: flags,
+    phoneContacts: phoneContacts,
+    greenCard: Some(greenCard),
+  }
 
   @react.component
   let make = () => {
-    
-    let (state, setState) = React.useState(_ => formData);
+    let (state, setState) = React.useState(_ => formData)
 
-     let onChange = v => {
-        Js.Console.log(v);
-        setState(_ => v);
-     };
+    let onChange = v => {
+      Js.Console.log(v)
+      setState(_ => v)
+    }
     <FormRender uiSchema formData=state schema onChange />
   }
 }
-
 
 ReactDOM.render(
   <React.StrictMode> <TestForm /> </React.StrictMode>,
