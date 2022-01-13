@@ -50,48 +50,45 @@ module TestForm = {
   // let income = {proofIncome: 100000.5}
   // let formData = { addInfo, income }
 
-  module SimpleFormSchema = %schema(
-    type names = {
-      middleName: string,
-      name: string,
-    }
-    type flags = {isLoveCats: bool}
-    type contact = {
-      names: names,
+  module RegisterFormSchema = %schema(
+    type formData = {
       phone: string,
-    }
-    type greenCard = {
-      names: names,
-      id: int,
-      photoLink: string,
-    }
-    type user = {
-      names: names,
       age: int,
-      flags: flags,
-      phoneContacts: array<contact>,
-      greenCard: option<greenCard>,
+      name: string,
+      password: string,
+      confirmPassword: string
     }
   )
 
-  open SimpleFormSchema
+  open RegisterFormSchema
 
-  let names = {middleName: "Some", name: "User"}
-  let greenCard = {
-    names: names,
-    id: 1234567,
-    photoLink: "https://play-lh.googleusercontent.com/6UgEjh8Xuts4nwdWzTnWH8QtLuHqRMUB7dp24JYVE2xcYzq4HA8hFfcAbU-R-PC_9uA1",
-  }
-  let phoneContactName = {middleName: "Best", name: "Friend"} // Well, how can it be without him?
-  let firstPhoneContact = {names: phoneContactName, phone: "123456789"}
-  let phoneContacts = [firstPhoneContact]
-  let flags = {isLoveCats: true} // of course! who doesn't love them
   let formData = {
-    names: names,
-    age: 41,
-    flags: flags,
-    phoneContacts: phoneContacts,
-    greenCard: Some(greenCard),
+    phone: "",
+    age: 0,
+    name: "",
+    password: "",
+    confirmPassword: "",
+  }
+
+  module AllStringTypeWidget = {
+    type t = string
+
+    @react.component
+    let make = (~value: t, ~onChange: t => unit) => {
+      let onChange = React.useCallback1(
+        e => ReactEvent.Form.target(e)["value"] |> onChange,
+        [onChange],
+      )
+      <input type_="text" placeholder="Empty String Widget" value onChange />
+    }
+    React.setDisplayName(make, "AgeWidget")
+  }
+
+  let customPrimitives: PrimitiveWidget.customWidgets = {
+    stringWidget: Some(module(AllStringTypeWidget)),
+    intWidget: None,
+    floatWidget: None,
+    boolWidget: None,
   }
 
   @react.component
@@ -102,7 +99,7 @@ module TestForm = {
       Js.Console.log(v)
       setState(_ => v)
     }
-    <FormRender uiSchema formData=state schema onChange />
+    <FormRender uiSchema formData=state schema onChange customPrimitives />
   }
 }
 
