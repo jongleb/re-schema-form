@@ -1,55 +1,55 @@
-module TestForm = {
-  // module ProofIncomeWidget = {
-  //   type t = float
+---
+sidebar_position: 2
+---
 
-  //   @react.component
-  //   let make = (~value: float, ~onChange: float => unit) => {
-  //     let onChange = React.useCallback1(
-  //       e => ReactEvent.Form.target(e)["valueAsNumber"] |> onChange,
-  //       [onChange],
-  //     )
-  //     <input style={ReactDOM.Style.make(~color="#71bc78", ~fontSize="50px", ())} value=Belt_Float.toString(value) type_="number" onChange />
-  //   }
-  //   React.setDisplayName(make, "AgeWidget")
-  // }
+# Custom widget for field
 
-  // module UserTest = %schema(
-  //   type sc_meta_data = Num(string) | Date(int)
-  //   type oneMoreType = {
-  //     someStrangeValue: float
-  //   }
-  //   type addInfo = {
-  //     fullName: string,
-  //     @sc_meta(Date(123))
-  //     personBirthday: string,
-  //     isPension: bool,
-  //     maybeString: option<string>,
-  //     arrayField: array<string>,
-  //     arrayWithObj: array<oneMoreType>,
-  //   }
-  //   type income = {
-  //     @sc_widget(module(ProofIncomeWidget: Widgets.Widget with type t = float))
-  //     proofIncome: float
-  //   }
-  //   type formData = {
-  //     addInfo,
-  //     income,
-  //   }
-  // )
+Continuing to fiddle with our **registration form**. We want to **mask** the **password** field.
+We have **two options**, either **parametrize** the string widget or **define another widget** for the password
 
-  // open UserTest
+We will learn how to parameterize in the **meta chapter**, now let's define a **special widget** for passwords
 
-  // let firstOneMore = {someStrangeValue: 0.}
-  // let addInfo = { personBirthday: "22.11.1995"
-  //   , fullName: "Ivanov Ivan Ivanovich"
-  //   , isPension: false
-  //   , maybeString: None
-  //   , arrayField: ["a", "b"]
-  //   , arrayWithObj: [firstOneMore]
-  // }
-  // let income = {proofIncome: 100000.5}
-  // let formData = { addInfo, income }
+Create **before all** declarations (and type) our **Widget**
 
+```reason
+module PasswordWidget = {
+    type t = string
+
+    @react.component
+    let make = (~value: t, ~onChange: t => unit) => {
+      let onChange = React.useCallback1(
+        e => ReactEvent.Form.target(e)["value"] |> onChange,
+        [onChange],
+      )
+      <input type_="password" placeholder="Empty password" value onChange />
+    }
+    React.setDisplayName(make, "PasswordWidget")
+  }
+```
+
+And then attach it to our password fields
+
+```reason
+  module RegisterFormSchema = %schema(
+    type formData = {
+      phone: string,
+      age: int,
+      name: string,
+      @sc_widget(module(PasswordWidget: Widgets.Widget with type t = string))
+      password: string,
+      @sc_widget(module(PasswordWidget: Widgets.Widget with type t = string))
+      confirmPassword: string
+    }
+  )
+```
+
+That's all
+
+You can run to open a browser and check the results.
+
+### Full listing
+
+```reason
   module PasswordWidget = {
     type t = string
 
@@ -118,8 +118,4 @@ module TestForm = {
     <FormRender uiSchema formData=state schema onChange customPrimitives />
   }
 }
-
-ReactDOM.render(
-  <React.StrictMode> <TestForm /> </React.StrictMode>,
-  ReactDOM.querySelector("#root")->Belt.Option.getExn,
-)
+```
