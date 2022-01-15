@@ -64,15 +64,33 @@ module TestForm = {
     React.setDisplayName(make, "Passwordidget")
   }
 
+  type meta = {title: string}
+
+  module CustomFieldTemplate: UiFields.FieldTemplate with type m = meta = {
+    type m = meta
+    @react.component
+    let make = (~value as _, ~onChange as _, ~children: React.element, ~meta) =>
+      <div>
+        <label> {Belt_Option.getWithDefault(meta, {title: ""}).title |> React.string} </label>
+        {children}
+      </div>
+  }
+
   module RegisterFormSchema = %schema(
+    type sc_meta_data = meta
     type formData = {
+      @sc_meta({title: "Phone"})
       phone: string,
+      @sc_meta({title: "Age"})
       age: int,
+      @sc_meta({title: "Name"})
       name: string,
+      @sc_meta({title: "Password"})
       @sc_widget(module(PasswordWidget: Widgets.Widget with type t = string))
       password: string,
+      @sc_meta({title: "Confrim password"})
       @sc_widget(module(PasswordWidget: Widgets.Widget with type t = string))
-      confirmPassword: string
+      confirmPassword: string,
     }
   )
 
@@ -115,7 +133,14 @@ module TestForm = {
       Js.Console.log(v)
       setState(_ => v)
     }
-    <FormRender uiSchema formData=state schema onChange customPrimitives />
+    <FormRender
+      fieldTemplate=module(CustomFieldTemplate)
+      uiSchema
+      formData=state
+      schema
+      onChange
+      customPrimitives
+    />
   }
 }
 

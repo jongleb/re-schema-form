@@ -1,6 +1,7 @@
 open Schema
 open MutualTypes
 open UiSchema
+open UiFields
 
 module Make = (Render: SchemaRender): ReRender => {
   type props<'t, 'r, 'k, 'm> = {
@@ -9,6 +10,8 @@ module Make = (Render: SchemaRender): ReRender => {
     field: module(Field with type t = 'k and type r = 'r),
     uiSchema: module(FieldUiSchema with type t = 'k),
     onChange: 'r => unit,
+    meta: option<'m>,
+    fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
     key: string,
   }
 
@@ -19,6 +22,8 @@ module Make = (Render: SchemaRender): ReRender => {
     ~field: module(Field with type t = 'k and type r = 'r),
     ~uiSchema: module(FieldUiSchema with type t = 'k),
     ~onChange: 'r => unit,
+    ~meta: option<'m>,
+    ~fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
     ~key: string,
     unit,
   ) => props<'t, 'r, 'k, 'm> = ""
@@ -37,6 +42,8 @@ module Make = (Render: SchemaRender): ReRender => {
       uiSchema=props.uiSchema
       field=props.schema
       formData={Field.get(props.obj)}
+      meta=props.meta
+      fieldTemplate=props.fieldTemplate
     />
   }
   let () = React.setDisplayName(make, "ReRender")

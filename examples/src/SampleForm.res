@@ -1,6 +1,3 @@
-
 module SimpleFormSchema = %schema(
-    type user = {
-        age: int
-    }
+  type user = {age: int}
 )
