@@ -2,19 +2,43 @@
 ## Rescript form render
 Re-schema-form is a meta based render.  This can be especially useful for generating large forms with predefined templates. That is, we want to generate a form based on some kind of scheme. But at the same time, we do not want to describe the circuit separately and separately have the type. **ppx** is in my opinion the best solution for this
 
+### Documentation
+[Open documentation](https://re-schema-form-documentation.vercel.app/)
+
 ### Features
- 
- First of all!  This idea is not new. https://github.com/rjsf-team/react-jsonschema-form
- But the main difference is that in rjsf we must define the FormData type and also describe the schema itself. **BUT** in react-schema-form we should define only our type (form data type)
+You should only focus on the **data type** and on **templates** and **styles**.
+Rescript form render will take care of the rest
  
 ```rescript
 module StateSchema = %schema(
-  type schema_meta = {name: string}
-  type app = {
-    first_field: string,
-    second_field: int
+    type subType = {flag: bool}
+    type app = {
+      firstField: string,
+      secondField: int,
+      subType: subType,
+    }
+  )
+
+  // Yes it's all, schema already generated
+  // We need only render Component
+
+  let subType: StateSchema.subType = {flag: false}
+  let formData: StateSchema.app = {
+    firstField: "Initial",
+    secondField: 1,
+    subType: subType,
   }
-);
+
+  @react.component
+  let make = () => {
+    let (_, setState) = React.useState(_ => formData)
+
+    let onChange = v => {
+      Js.Console.log(v)
+      setState(_ => v)
+    }
+    <FormRender uiSchema=StateSchema.uiSchema schema=StateSchema.schema onChange formData />
+  }
 ``` 
 
 ### Installation
@@ -35,22 +59,4 @@ Okay, start
 
 ## Examples and sources
 
-#### Simple example
-[Demo](https://re-schema-form-gw2zquki4-jongleb.vercel.app/#1)
-[Source](https://github.com/jongleb/re-schema-form/blob/master/examples/src/App.res)
-
-#### Custom render
-[Demo](https://re-schema-form-gw2zquki4-jongleb.vercel.app/#2)
-[Source](https://github.com/jongleb/re-schema-form/blob/master/examples/src/CustomRenderByType.res)
-
-#### Custom render concrete field
-[Demo](https://re-schema-form-gw2zquki4-jongleb.vercel.app/#3)
-[Source](https://github.com/jongleb/re-schema-form/blob/master/examples/src/ConcreteFieldRender.res)
-
-#### Field wrapper
-[Demo](https://re-schema-form-gw2zquki4-jongleb.vercel.app/#4)
-[Source](https://github.com/jongleb/re-schema-form/blob/master/examples/src/FieldWrapperExample.res)
-
-#### Option (Nullable field) and render (for exmaple)
-[Demo](https://re-schema-form-gw2zquki4-jongleb.vercel.app/#5)
-[Source](https://github.com/jongleb/re-schema-form/blob/master/examples/src/NullableField.res)
+I' am working on it
