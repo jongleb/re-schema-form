@@ -16,7 +16,7 @@
     "postinstall": "node postinstall.js"
   },
   "devDependencies": {
-    "@rescript/react": "0.10.3",
-    "rescript": "9.1.4"
+    "@rescript/react": "0.11.0",
+    "rescript": "10.1.0"
   }
 }
