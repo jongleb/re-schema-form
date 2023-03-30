@@ -1,19 +1,24 @@
 open Schema
 
 module type ObjectFieldTemplate = {
-  @react.component
-  let make: (
-    ~formData: 't,
-    ~schema: array<schemaListItem<'t, 'm>>,
-    ~onChange: 't => unit,
-    ~content: array<React.element>,
-  ) => React.element
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
+    content: array<React.element>
+  }
+  let make: (props<'t, 'm>) => React.element
 }
 
 module DefaultObjectFieldTemplate = {
-  @react.component
-  let make = (~formData as _, ~schema as _, ~onChange as _, ~content: array<React.element>) =>
-    <div> {React.array(content)} </div>
+  type props<'t, 'm> = {
+    formData: 't,
+    schema: array<schemaListItem<'t, 'm>>,
+    onChange: 't => unit,
+    content: array<React.element>
+  }
+  let make = (props: props<'t, 'm>) =>
+    <div> {React.array(props.content)} </div>
 }
 
 module ObjectFieldTemplateContext = {
@@ -22,11 +27,6 @@ module ObjectFieldTemplateContext = {
   )
 
   module Provider = {
-    let provider = React.Context.provider(context)
-
-    @react.component
-    let make = (~value, ~children) => {
-      React.createElement(provider, {"value": value, "children": children})
-    }
+    let make = React.Context.provider(context)
   }
 }

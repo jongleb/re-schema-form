@@ -1,7 +1,7 @@
 {
     "ocaml.sandbox": {
         "kind": "esy",
-        "root": "${workspaceFolder:ppx-examples}"
+        "root": "${workspaceFolder:re-schema-form}"
     },
     "[rescript]": {
         "editor.defaultFormatter": "chenglou92.rescript-vscode"

@@ -144,7 +144,10 @@ module TestForm = {
   }
 }
 
-ReactDOM.render(
-  <React.StrictMode> <TestForm /> </React.StrictMode>,
-  ReactDOM.querySelector("#root")->Belt.Option.getExn,
-)
+switch ReactDOM.querySelector("#root") {
+| Some(rootElement) => {
+    let root = ReactDOM.Client.createRoot(rootElement)
+    ReactDOM.Client.Root.render(root, <React.StrictMode> <TestForm /> </React.StrictMode>)
+  }
+| None => ()
+}

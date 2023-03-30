@@ -2,34 +2,16 @@ open Schema
 open MutualTypes
 open UiSchema
 open UiFields
+open Re_render_render_props
 
 module Make = (Render: SchemaRender): ReRender => {
-  type props<'t, 'r, 'k, 'm> = {
-    obj: 'r,
-    schema: Schema.t<'t, 'r, 'k, 'm>,
-    field: module(Field with type t = 'k and type r = 'r),
-    uiSchema: module(FieldUiSchema with type t = 'k),
-    onChange: 'r => unit,
-    meta: option<'m>,
-    fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
-    key: string,
+  type props = {
+    wrapped: Any.t
   }
 
-  @obj
-  external makeProps: (
-    ~obj: 'r,
-    ~schema: Schema.t<'t, 'r, 'k, 'm>,
-    ~field: module(Field with type t = 'k and type r = 'r),
-    ~uiSchema: module(FieldUiSchema with type t = 'k),
-    ~onChange: 'r => unit,
-    ~meta: option<'m>,
-    ~fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
-    ~key: string,
-    unit,
-  ) => props<'t, 'r, 'k, 'm> = ""
-
-  let make = (type t r k m, props: props<t, r, k, m>) => {
-    let module(Field: Field with type t = k and type r = r) = props.field
+  let make = React.memo((props: props) => {
+    let { wrapped: Any.Any_props(props) } = props
+    let module(Field) = props.field
     let objRef = React.useRef(props.obj)
     let onChange = React.useCallback0(val => val |> Field.set(objRef.current) |> props.onChange)
     React.useEffect2(() => {
@@ -37,14 +19,15 @@ module Make = (Render: SchemaRender): ReRender => {
       None
     }, (props.onChange, props.obj))
     <Render
-      key="rerenderImpl"
-      onChange
-      uiSchema=props.uiSchema
-      field=props.schema
-      formData={Field.get(props.obj)}
-      meta=props.meta
-      fieldTemplate=props.fieldTemplate
+      wrapped=Any_props({
+        onChange,
+        uiSchema: props.uiSchema,
+        field: props.schema,
+        meta: props.meta,
+        fieldTemplate: props.fieldTemplate,
+        formData: Field.get(props.obj)
+      })
     />
-  }
+  })
   let () = React.setDisplayName(make, "ReRender")
 }

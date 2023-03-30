@@ -1,53 +1,37 @@
-open UiSchema
-open UiFields
 open MutualTypes
+open Schema_render_props
 
 module Make = (Render: SwitchRender): SchemaRender => {
-  type props<'t, 'r, 'k, 'm> = {
-    field: Schema.t<'t, 'r, 'k, 'm>,
-    onChange: 'k => unit,
-    formData: 'k,
-    uiSchema: module(FieldUiSchema with type t = 'k),
-    meta: option<'m>,
-    fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
-    key: string,
+
+  type props = {
+    wrapped: Any.t
   }
 
-  @obj
-  external makeProps: (
-    ~field: Schema.t<'t, 'r, 'k, 'm>,
-    ~onChange: 'k => unit,
-    ~formData: 'k,
-    ~uiSchema: module(FieldUiSchema with type t = 'k),
-    ~meta: option<'m>,
-    ~fieldTemplate: option<module(FieldTemplate with type m = 'm)>,
-    ~key: string,
-    unit,
-  ) => props<'t, 'r, 'k, 'm> = ""
-
-  let make:
-    type t r k m. React.component<props<t, r, k, m>> =
-    (props: props<t, r, k, m>) => {
-      let module(UiSchema: FieldUiSchema with type t = k) = props.uiSchema
+  let make =
+    React.memo((props: props) => {
+      let { wrapped: Any.Any_props(props) } = props
+      let module(UiSchema) = props.uiSchema
       let switchRender =
         <Render
-          field=props.field
-          onChange=props.onChange
-          formData=props.formData
-          widget=UiSchema.widget
-          meta=props.meta
-          fieldTemplate=props.fieldTemplate
+          wrapped=Switch_render_props.Any.Any_props({
+             field:props.field,
+             onChange:props.onChange,
+             formData:props.formData,
+             widget:UiSchema.widget,
+             meta:props.meta,
+             fieldTemplate:props.fieldTemplate
+          })
         />
       let withUiField = switch UiSchema.field {
-      | Some(module(UiField: UiField with type t = k)) =>
+      | Some(module(UiField)) =>
         <UiField value=props.formData onChange=props.onChange> {switchRender} </UiField>
       | _ => switchRender
       }
       switch props.fieldTemplate {
-      | Some(module(Field: FieldTemplate with type m = m)) =>
+      | Some(module(Field)) =>
         <Field value=props.formData onChange=props.onChange meta=props.meta> {withUiField} </Field>
       | _ => withUiField
       }
-    }
+    })
   let () = React.setDisplayName(make, "SchemaRender")
 }

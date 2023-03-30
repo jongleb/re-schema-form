@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "@rescript/react": "0.11.0",
-    "rescript": "10.1.0"
+    "rescript": "10.1.2"
   }
 }

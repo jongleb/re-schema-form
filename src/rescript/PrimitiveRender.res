@@ -7,13 +7,6 @@ type props<'t, 'r, 'k, 'm> = {
   onChange: 'k => unit,
   formData: 'k,
 }
-@obj
-external makeProps: (
-  ~field: Schema.t<primitive<'k>, 'r, 'k, 'm>,
-  ~onChange: 'k => unit,
-  ~formData: 'k,
-  unit,
-) => props<'t, 'r, 'k, 'm> = ""
 
 let make = (type t r k m, props: props<t, r, k, m>) => {
   let Primitive(p) = props.field

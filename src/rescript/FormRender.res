@@ -16,7 +16,14 @@ let make = (
 ) => {
   let content =
     <SchemaRenderImpl
-      fieldTemplate key="formRenderImpl" meta=None field=schema onChange formData uiSchema
+      wrapped=Any_props({
+        fieldTemplate,
+        meta:None,
+        field:schema,
+        onChange,
+        formData,
+        uiSchema
+      })
     />
   let customWidgets = Belt_Option.getWithDefault(customPrimitives, PrimitiveWidget.defaultValue)
   <PrimitiveWidget.Provider value=customWidgets>

@@ -1,7 +1,8 @@
 {
   "name": "re-schema-form",
+  "namespace": true,
   "version": "10.1.2",
-  "reason": { "version": 4, "mode": "classic" },
+  "jsx": { "version": 4, "mode": "classic"},
   "sources": [
     "src/rescript"
   ],

@@ -6,9 +6,9 @@ module type Widget = {
 
 module TextUnhadledEventWidget = {
   @react.component
-  let make = (~value: string, ~onChange: 'a => unit, ~type_: string) => {
+  let make = (~value: string, ~onChange: 'a => unit, @as("type") ~type_: string) => {
     let onChange = React.useCallback1(e => ReactEvent.Form.target(e) |> onChange, [onChange])
-    <input value type_ onChange />
+    <input value={value} type_ onChange />
   }
   let () = React.setDisplayName(make, "TextWidget")
 }
