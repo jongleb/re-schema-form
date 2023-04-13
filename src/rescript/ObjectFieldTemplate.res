@@ -5,9 +5,9 @@ module type ObjectFieldTemplate = {
     formData: 't,
     schema: array<schemaListItem<'t, 'm>>,
     onChange: 't => unit,
-    content: array<React.element>
+    content: array<React.element>,
   }
-  let make: (props<'t, 'm>) => React.element
+  let make: props<'t, 'm> => React.element
 }
 
 module DefaultObjectFieldTemplate = {
@@ -15,10 +15,9 @@ module DefaultObjectFieldTemplate = {
     formData: 't,
     schema: array<schemaListItem<'t, 'm>>,
     onChange: 't => unit,
-    content: array<React.element>
+    content: array<React.element>,
   }
-  let make = (props: props<'t, 'm>) =>
-    <div> {React.array(props.content)} </div>
+  let make = (props: props<'t, 'm>) => <div> {React.array(props.content)} </div>
 }
 
 module ObjectFieldTemplateContext = {

@@ -14,17 +14,18 @@ let make = (
   ~customPrimitives: option<PrimitiveWidget.customWidgets>=?,
   ~uiSchema: module(FieldUiSchema with type t = 'k),
 ) => {
-  let content =
+  let content = React.useMemo5(() =>
     <SchemaRenderImpl
       wrapped=Any_props({
         fieldTemplate,
-        meta:None,
-        field:schema,
+        meta: None,
+        field: schema,
         onChange,
         formData,
-        uiSchema
+        uiSchema,
       })
     />
+  , (fieldTemplate, schema, onChange, formData, uiSchema))
   let customWidgets = Belt_Option.getWithDefault(customPrimitives, PrimitiveWidget.defaultValue)
   <PrimitiveWidget.Provider value=customWidgets>
     {switch objectFieldTemplate {

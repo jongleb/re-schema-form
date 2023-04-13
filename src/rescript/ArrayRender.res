@@ -4,12 +4,11 @@ open UiFields
 open Array_render_props
 
 module Make = (Render: SchemaRender) => {
-  type props = {
-    wrapped: Any.t
-  }
+  @unboxed
+  type props = {wrapped: Any.t}
 
   let make = React.memo((props: props) => {
-    let { wrapped: Any.Any_props(props) } = props
+    let {wrapped: Any.Any_props(props)} = props
     let SArr(schema, uiSchema) = props.field
     let mapToElement = Js.Array.mapi((data, i) => {
       let onChange = upd =>
@@ -22,7 +21,7 @@ module Make = (Render: SchemaRender) => {
           field: schema,
           meta: props.meta,
           fieldTemplate: props.fieldTemplate,
-          formData: data
+          formData: data,
         })
       />
     })

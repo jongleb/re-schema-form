@@ -33,7 +33,7 @@ module Make = (Render: SchemaRender) => {
           field: schema,
           meta: props.meta,
           fieldTemplate: props.fieldTemplate,
-          formData: data
+          formData: data,
         })
       />
     | _ =>
