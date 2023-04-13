@@ -1,9 +1,8 @@
 {
   "name": "re-schema-form-examples",
   "namespace": true,
-  "refmt": 3,
   "suffix": ".bs.js",
-  "reason": { "react-jsx": 3 },
+  "jsx": { "version": 4, "mode": "automatic" },
   "bsc-flags": [
     "-bs-super-errors",
     "-bs-no-version-header"

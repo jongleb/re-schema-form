@@ -27,13 +27,14 @@ module Make = (Render: SchemaRender) => {
     switch props.formData {
     | Some(data) =>
       <Render
-        key="nullableImpl"
-        meta=props.meta
-        field=schema
-        onChange
-        formData=data
-        uiSchema
-        fieldTemplate=props.fieldTemplate
+        wrapped=Any_props({
+          onChange,
+          uiSchema,
+          field: schema,
+          meta: props.meta,
+          fieldTemplate: props.fieldTemplate,
+          formData: data,
+        })
       />
     | _ =>
       switch schema {

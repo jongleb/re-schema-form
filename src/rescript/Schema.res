@@ -7,9 +7,9 @@ module type Field = {
   let set: (r, t) => r
 }
 
-type obj = Obj
-type arr = Arr
-type nullable = Nullable
+type obj
+type arr
+type nullable
 
 type rec primitive<'t> =
   | SInt: primitive<int>

@@ -1,8 +1,8 @@
 {
   "name": "re-schema-form",
-  "reason": {
-    "react-jsx": 3
-  },
+  "namespace": true,
+  "version": "10.1.2",
+  "jsx": { "version": 4, "mode": "classic"},
   "sources": [
     "src/rescript"
   ],
@@ -19,7 +19,6 @@
   ],
   "bs-dev-dependencies": [
   ],
-  "refmt": 3,
   "warnings": {
     "number": "-48"
   }

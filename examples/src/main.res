@@ -115,7 +115,7 @@ module TestForm = {
       )
       <input type_="text" placeholder="Empty String Widget" value onChange />
     }
-    React.setDisplayName(make, "AgeWidget")
+    let () = React.setDisplayName(make, "AllStringTypeWidget")
   }
 
   let customPrimitives: PrimitiveWidget.customWidgets = {
@@ -129,10 +129,10 @@ module TestForm = {
   let make = () => {
     let (state, setState) = React.useState(_ => formData)
 
-    let onChange = v => {
+    let onChange = React.useCallback0(v => {
       Js.Console.log(v)
       setState(_ => v)
-    }
+    })
     <FormRender
       fieldTemplate=module(CustomFieldTemplate)
       uiSchema
@@ -144,7 +144,16 @@ module TestForm = {
   }
 }
 
-ReactDOM.render(
-  <React.StrictMode> <TestForm /> </React.StrictMode>,
-  ReactDOM.querySelector("#root")->Belt.Option.getExn,
-)
+switch ReactDOM.querySelector("#root") {
+| Some(rootElement) => {
+    let root = ReactDOM.Client.createRoot(rootElement)
+    ReactDOM.Client.Root.render(
+      root,
+      <React.StrictMode>
+        <TestForm />
+      </React.StrictMode>,
+    )
+  }
+
+| None => ()
+}

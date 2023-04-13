@@ -18,10 +18,5 @@ let defaultValue = {
 let context: React.Context.t<customWidgets> = React.createContext(defaultValue)
 
 module Provider = {
-  let provider = React.Context.provider(context)
-
-  @react.component
-  let make = (~value, ~children) => {
-    React.createElement(provider, {"value": value, "children": children})
-  }
+   let make = React.Context.provider(context)
 }

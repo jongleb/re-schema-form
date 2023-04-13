@@ -9,6 +9,7 @@
 /esy.lock
 /lib
 /binaries
+/examples
 esy.json
 dune-project
 re-schema-form.install
