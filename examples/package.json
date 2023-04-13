@@ -24,7 +24,7 @@
     "@rescript/react": "^0.11.0",
     "dompurify": "^2.2.9",
     "marked": "^2.1.1",
-    "re-schema-form": "^0.0.11",
+    "re-schema-form": "1.5.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
